@@ -1,21 +1,20 @@
-'use client'
+"use client";
 
-import { DaimoPayButton } from '@daimo/pay'
-import { type Address } from 'viem'
-import { BASE_USDC_ADDR, getMintCall } from '../chain/pendle'
+import { DaimoPayButton } from "@daimo/pay";
+import { type Address } from "viem";
+import { BASE_USDC_ADDR, getDepositCall } from "../chain/pendle";
 
 interface DepositButtonProps {
-  recipientAddr: Address
+  recipientAddr: Address;
 }
 
 export function DepositButton({ recipientAddr }: DepositButtonProps) {
-  const { toChain, toAddress, toCallData } = getMintCall({ recipientAddr })
+  const { toChain, toAddress, toCallData } = getDepositCall({ recipientAddr });
 
   return (
     <DaimoPayButton
       appId="pay-demo"
       toChain={toChain.id}
-      toUnits="1.00"
       toToken={BASE_USDC_ADDR}
       toAddress={toAddress}
       toCallData={toCallData}
@@ -23,5 +22,5 @@ export function DepositButton({ recipientAddr }: DepositButtonProps) {
       onPaymentStarted={(e) => console.log(e)}
       onPaymentCompleted={(e) => console.log(e)}
     />
-  )
-} 
+  );
+}

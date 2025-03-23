@@ -9,124 +9,35 @@ export const BASE_USDC_ADDR = getAddress(
 export const BASE_MUSDC_ADDR = getAddress(
   "0xEdc817A28E8B93B03976FBd4a3dDBc9f7D176c22"
 );
+export const BASE_DEPOSIT_CONTRACT_ADDR = getAddress(
+  "0x5A5792c3B98581e0F8349F5A3F7D2CE17c0640D1"
+);
 
-// const MOONWELL_COMPTROLLER_ADDR = "0xfBb21d0380beE3312B33c4353c8936a0F13EF26C";
+export const BASE_PENDLE_MUSDC_ADDR = getAddress(
+  "0x2a9e9256e0d1ad0f7f9d7c7248cb7e2f06072deb"
+);
 
-// const PENDLE_ROUTER_ADDR = "TODO";
-// const PENDLE_MARKET_ADDR = "TODO";
-
-const MULTICALL3_ADDR = "0xcA11bde05977b3631167028862bE2a173976CA11";
-
-// ======= ABIs =======
-// Moonwell cToken mint ABI
-const moonwellCTokenAbi = [
+const depositAbi = [
   {
-    inputs: [{ name: "mintAmount", type: "uint256" }],
-    name: "mint",
-    outputs: [{ name: "", type: "uint256" }],
+    inputs: [{ name: "recipientAddr", type: "address" }],
+    name: "deposit",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;
 
-// ERC20 transfer ABI
-const erc20TransferAbi = [
-  {
-    inputs: [
-      { name: "recipient", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
-// Multicall ABI (simplified for our use case)
-const multicallAbi = [
-  {
-    inputs: [
-      {
-        name: "calls",
-        type: "tuple[]",
-        components: [
-          { name: "target", type: "address" },
-          { name: "callData", type: "bytes" },
-        ],
-      },
-    ],
-    name: "aggregate",
-    outputs: [
-      { name: "blockNumber", type: "uint256" },
-      { name: "returnData", type: "bytes[]" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
-
-// ======= Exported Functions =======
 /**
- * Generates a multicall transaction that mints Moonwell mUSDC
- * TODO: Wrap in Pendle to get PT tokens instead
+ * Generates a transaction to deposit USDC into mUSDC
  */
-export function getMintCall({ recipientAddr }: { recipientAddr: Address }) {
-  const amount = BigInt(1_000_000);
-
+export function getDepositCall({ recipientAddr }: { recipientAddr: Address }) {
   return {
     toChain: base,
-    toAddress: MULTICALL3_ADDR as Address,
+    toAddress: BASE_DEPOSIT_CONTRACT_ADDR,
     toCallData: encodeFunctionData({
-      abi: multicallAbi,
-      functionName: "aggregate",
-      args: [
-        [
-          getMoonwellMintCall(amount),
-          getTransferCall({
-            tokenAddr: BASE_MUSDC_ADDR,
-            recipientAddr,
-            amount,
-          }),
-        ],
-      ],
-    }),
-  };
-}
-
-// ======= Implementation Functions =======
-/**
- * Generates parameters for a Moonwell mUSDC mint transaction
- */
-function getMoonwellMintCall(amount: bigint) {
-  return {
-    target: BASE_MUSDC_ADDR,
-    callData: encodeFunctionData({
-      abi: moonwellCTokenAbi,
-      functionName: "mint",
-      args: [amount],
-    }),
-  };
-}
-
-/**
- * Generates parameters for an ERC20 transfer transaction
- */
-function getTransferCall({
-  tokenAddr,
-  recipientAddr,
-  amount,
-}: {
-  tokenAddr: Address;
-  recipientAddr: Address;
-  amount: bigint;
-}) {
-  return {
-    target: tokenAddr,
-    callData: encodeFunctionData({
-      abi: erc20TransferAbi,
-      functionName: "transfer",
-      args: [recipientAddr, amount],
+      abi: depositAbi,
+      functionName: "deposit",
+      args: [recipientAddr],
     }),
   };
 }
