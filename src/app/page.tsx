@@ -8,7 +8,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-2">🔷 Bluestake</h1>
       <p className="text-lg mb-8 text-gray-600">earn safe, blue-chip yield in one click</p>
       
-      <DepositButton recipientAddr='0x0000000000000000000000000000000000000000' />
+      <DepositButton recipientAddr='0xc60A0A0E8bBc32DAC2E03030989AD6BEe45A874D' />
     </div>
   )
 }
