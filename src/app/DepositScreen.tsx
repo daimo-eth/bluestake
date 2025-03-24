@@ -4,12 +4,13 @@ import { Deposit } from '../chain/balance'
 
 type Props = {
   address: `0x${string}`
+  addressName: string
   balance: string
   deposits: Deposit[]
   refetch: () => void
 }
 
-export function DepositScreen({ address, balance, deposits, refetch }: Props) {
+export function DepositScreen({ address, addressName, balance, deposits, refetch }: Props) {
   return (
     <div className="w-full max-w-md space-y-8">
       {/* Balance */}
@@ -22,7 +23,7 @@ export function DepositScreen({ address, balance, deposits, refetch }: Props) {
       {/* APY and ENS */}
       <div className="flex justify-between items-center text-gray-600">
         <div>6.14% APY</div>
-        <div>{address}</div>
+        <div>{addressName}</div>
       </div>
 
       {/* Deposit Button */}
