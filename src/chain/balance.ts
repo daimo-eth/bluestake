@@ -24,7 +24,7 @@ const balanceOfAbi = [
 
 export type Deposit = {
   timestamp: number;
-  amountUsd: string;
+  amountUsd: number;
   url: string;
 };
 
@@ -41,7 +41,7 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
 
     try {
       console.log(`fetching balance for ${address}`);
-      
+
       const [rawBalance, logs] = await Promise.all([
         publicClient.readContract({
           address: BASE_MUSDC_ADDR,
@@ -52,9 +52,9 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
         publicClient.getLogs({
           address: BASE_DEPOSIT_CONTRACT_ADDR,
           event: getAbiItem({ abi: DEPOSIT_CONTRACT_ABI, name: "Deposited" }),
-          // args: { recipientAddr: address },
+          args: { recipientAddr: address },
           strict: true,
-          fromBlock: BigInt(27990000)
+          fromBlock: BigInt(27990000),
         }),
       ]);
 
@@ -65,13 +65,15 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
         const timestamp = getTimestampFromBlockHeight(log.blockNumber);
         return {
           timestamp,
-          amountUsd: formatUnits(log.args.amount as bigint, 6),
+          amountUsd: Number(formatUnits(log.args.amount as bigint, 6)),
           url: `https://basescan.org/tx/${log.transactionHash}`,
         };
       });
       setDeposits(depositLogs);
-      
-      console.log(`balance: ${formattedBalance}, num deposits: ${depositLogs.length}`);
+
+      console.log(
+        `balance: ${formattedBalance}, num deposits: ${depositLogs.length}`
+      );
     } catch {
       setBalance(undefined);
       setDeposits([]);

@@ -1,79 +1,75 @@
-import { useState } from 'react'
-import { DepositButton } from './DepositButton'
-import { formatDistanceToNow } from 'date-fns'
-import { Deposit } from '../chain/balance'
-import ReactConfetti from 'react-confetti'
+import { useState } from "react";
+import { DepositButton } from "./DepositButton";
+import ReactConfetti from "react-confetti";
+import { Deposit } from "@/chain/balance";
 
 type Props = {
-  address: `0x${string}`
-  addressName: string
-  balance: string
-  deposits: Deposit[]
-  refetch: () => void
-}
+  address: `0x${string}`;
+  addressName: string;
+  balance: string;
+  deposits: Deposit[];
+  refetch: () => Promise<void>;
+  onLogout: () => void;
+};
 
-export function DepositScreen({ address, addressName, balance, deposits, refetch }: Props) {
-  const [showConfetti, setShowConfetti] = useState(false)
+export function DepositScreen({
+  address,
+  addressName,
+  balance,
+  deposits,
+  refetch,
+  onLogout,
+}: Props) {
+  const [showConfetti, setShowConfetti] = useState(false);
 
   return (
-    <div className="w-full max-w-md space-y-8">
+    <div className="w-full max-w-md">
       {showConfetti && (
         <ReactConfetti
           width={window.innerWidth}
           height={window.innerHeight}
-          recycle={false}
           numberOfPieces={200}
+          recycle={false}
           onConfettiComplete={() => setShowConfetti(false)}
         />
       )}
-
-      {/* Balance */}
-      <div className="text-center">
-        <div className="text-5xl font-bold mb-2">
-          ${Number(balance).toFixed(2)}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <p className="text-2xl font-bold">${Number(balance).toFixed(2)}</p>
+            <p className="text-sm text-gray-500">6.14% APY</p>
+          </div>
+          <div className="text-right">
+            <p className="font-medium">{addressName}</p>
+            <button
+              onClick={onLogout}
+              className="text-gray-400 hover:text-gray-600 text-sm px-2 py-1 rounded cursor-pointer"
+            >
+              logout
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* APY and ENS */}
-      <div className="flex justify-between items-center text-gray-600">
-        <div>6.14% APY</div>
-        <div>{addressName}</div>
-      </div>
-
-      {/* Deposit Button */}
-      <div className="flex justify-center">
-        <DepositButton 
-          recipientAddr={address} 
+        <DepositButton
+          recipientAddr={address}
           refetch={refetch}
           onPaymentSucceeded={() => setShowConfetti(true)}
         />
-      </div>
-
-      {/* Recent Deposits */}
-      {deposits.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Recent Deposits</h3>
+        <div className="mt-6">
+          <h3 className="font-medium mb-2">Recent Deposits</h3>
           <div className="space-y-2">
-            {deposits.map((deposit, i) => (
-              <a 
-                key={i}
-                href={deposit.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
-              >
-                <div>
-                  <div className="font-medium">${deposit.amountUsd}</div>
-                  <div className="text-sm text-gray-500">
-                    {formatDistanceToNow(deposit.timestamp * 1000, { addSuffix: true })}
-                  </div>
+            {[...deposits]
+              .sort((a, b) => b.timestamp - a.timestamp)
+              .map((deposit, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span>${deposit.amountUsd.toFixed(2)}</span>
+                  <span className="text-gray-500">
+                    {new Date(deposit.timestamp * 1000).toLocaleString()}
+                  </span>
                 </div>
-                <div className="text-gray-400">→</div>
-              </a>
-            ))}
+              ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
-  )
-} 
+  );
+}

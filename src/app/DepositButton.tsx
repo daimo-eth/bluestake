@@ -32,7 +32,7 @@ export function DepositButton({
       {({ show }) => (
         <button
           onClick={show}
-          className="px-8 py-4 bg-blue-500 text-white text-lg font-medium rounded-lg hover:bg-blue-600 transition-colors"
+          className="w-full px-8 py-4 bg-blue-500 text-white text-lg font-medium rounded-lg hover:bg-blue-600 transition-colors"
         >
           Deposit
         </button>

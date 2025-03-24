@@ -1,59 +1,79 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { isAddress, getAddress } from 'viem'
-import { createPublicClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { useBalance } from '../chain/balance'
-import { DepositScreen } from './DepositScreen'
+import { useState, useEffect } from "react";
+import { isAddress, getAddress } from "viem";
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
+import { useBalance } from "../chain/balance";
+import { DepositScreen } from "./DepositScreen";
 
 const publicClient = createPublicClient({
   chain: mainnet,
   transport: http(),
-})
+});
 
 export default function Home() {
-  const [addrName, setAddrName] = useState('')
-  const [addr, setAddr] = useState<`0x${string}` | null>(null)
-  const [error, setError] = useState('')
-  const { balance, deposits, refetch } = useBalance({ address: addr })
+  const [addrName, setAddrName] = useState(window.localStorage.addrName ?? "");
+  const [addr, setAddr] = useState<`0x${string}` | null>(
+    window.localStorage.addr
+      ? (getAddress(window.localStorage.addr) as `0x${string}`)
+      : null
+  );
+  const [error, setError] = useState("");
+  const { balance, deposits, refetch } = useBalance({ address: addr });
+
+  useEffect(() => {
+    if (addr) window.localStorage.addr = addr;
+    if (addrName) window.localStorage.addrName = addrName;
+  }, [addr, addrName]);
+
+  function handleLogout() {
+    setAddrName("");
+    setAddr(null);
+    delete window.localStorage.addr;
+    delete window.localStorage.addrName;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     if (!addrName.trim()) {
-      setError('Please enter an address or ENS name')
-      return
+      setError("Please enter an address or ENS name");
+      return;
     }
 
     if (isAddress(addrName)) {
-      setAddr(getAddress(addrName) as `0x${string}`)
-      setError('')
-      return
+      setAddr(getAddress(addrName) as `0x${string}`);
+      setError("");
+      return;
     }
 
-    if (addrName.endsWith('.eth')) {
+    if (addrName.endsWith(".eth")) {
       try {
-        const address = await publicClient.getEnsAddress({ name: addrName.toLowerCase() })
+        const address = await publicClient.getEnsAddress({
+          name: addrName.toLowerCase(),
+        });
         if (!address) {
-          setError('ENS name could not be resolved')
-          return
+          setError("ENS name could not be resolved");
+          return;
         }
-        setAddr(address)
-        setError('')
+        setAddr(address);
+        setError("");
       } catch {
-        setError('Failed to resolve ENS name')
+        setError("Failed to resolve ENS name");
       }
-      return
+      return;
     }
 
-    setError('Invalid Ethereum address format')
+    setError("Invalid Ethereum address format");
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 font-[system-ui,sans-serif]">
       <h1 className="text-4xl font-bold mb-2">🔷 Bluestake</h1>
-      <p className="text-lg mb-8 text-gray-600">earn safe, blue-chip yield in one click</p>
-      
+      <p className="text-sm font-medium mb-8 text-gray-600 uppercase tracking-wider">
+        EARN SAFE, BLUE-CHIP YIELD IN ONE CLICK
+      </p>
+
       {!addr ? (
         <form onSubmit={handleSubmit} className="w-full max-w-md">
           <div className="flex gap-2">
@@ -74,14 +94,15 @@ export default function Home() {
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </form>
       ) : (
-        <DepositScreen 
+        <DepositScreen
           address={addr}
           addressName={addrName}
-          balance={balance || '0'}
+          balance={balance || "0"}
           deposits={deposits}
           refetch={refetch}
+          onLogout={handleLogout}
         />
       )}
     </div>
-  )
+  );
 }
