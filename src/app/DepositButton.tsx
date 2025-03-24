@@ -7,8 +7,7 @@ import { BASE_USDC_ADDR, getDepositCall } from "../chain/yield";
 interface DepositButtonProps {
   recipientAddr: Address;
 }
-
-export function DepositButton({ recipientAddr }: DepositButtonProps) {
+export function DepositButton({ recipientAddr, refetch }: DepositButtonProps & { refetch: () => void }) {
   const { toChain, toAddress, toCallData } = getDepositCall({ recipientAddr });
 
   return (
@@ -20,7 +19,10 @@ export function DepositButton({ recipientAddr }: DepositButtonProps) {
       toCallData={toCallData}
       intent="Deposit"
       onPaymentStarted={(e) => console.log(e)}
-      onPaymentCompleted={(e) => console.log(e)}
+      onPaymentCompleted={(e) => {
+        console.log(e);
+        refetch();
+      }}
     />
   );
 }

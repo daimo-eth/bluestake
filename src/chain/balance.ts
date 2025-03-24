@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createPublicClient, http, formatUnits } from 'viem'
 import { base } from 'viem/chains'
 import { BASE_MUSDC_ADDR } from './yield'
@@ -18,38 +18,38 @@ const balanceOfAbi = [
   },
 ] as const
 
-type Deposit = {
-  amount: string
+export type Deposit = {
   timestamp: number
+  amountUsd: string
+  url: string
 }
 
 export function useBalance({ address }: { address?: `0x${string}` | null }) {
-  const [balance, setBalance] = useState<string>('0')
+  const [balance, setBalance] = useState<string>()
   const deposits: Deposit[] = [] // TODO: implement deposits
 
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (!address) {
-        setBalance('0')
-        return
-      }
-
-      try {
-        const rawBalance = await publicClient.readContract({
-          address: BASE_MUSDC_ADDR,
-          abi: balanceOfAbi,
-          functionName: 'balanceOf',
-          args: [address],
-        })
-        // USDC has 6 decimals
-        setBalance(formatUnits(rawBalance, 6)) 
-      } catch {
-        setBalance('0')
-      }
+  const fetchBalance = useCallback(async () => {
+    if (!address) {
+      setBalance('0')
+      return
     }
 
-    fetchBalance()
+    try {
+      const rawBalance = await publicClient.readContract({
+        address: BASE_MUSDC_ADDR,
+        abi: balanceOfAbi,
+        functionName: 'balanceOf',
+        args: [address],
+      })
+      setBalance(formatUnits(rawBalance, 6)) // USDC has 6 decimals
+    } catch {
+      setBalance('0')
+    }
   }, [address])
 
-  return { balance, deposits }
+  useEffect(() => {
+    fetchBalance()
+  }, [fetchBalance])
+
+  return { balance, deposits, refetch: fetchBalance }
 } 
