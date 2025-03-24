@@ -23,7 +23,6 @@ export function DepositScreen({
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
 
-  if (!balance) return null;
 
   return (
     <div className="w-full max-w-md">
@@ -39,7 +38,7 @@ export function DepositScreen({
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-2xl font-bold">${balance.toFixed(2)}</p>
+            <p className="text-2xl font-bold">{balance == null ? "..." : `$${balance.toFixed(2)}`}</p>
             <p className="text-sm text-green-600 flex items-center gap-1">
               <svg
                 className="w-4 h-4"
@@ -70,12 +69,12 @@ export function DepositScreen({
         <DepositButton
           recipientAddr={address}
           refetch={refetch}
-          showMore={balance > 0}
+          showMore={balance != null && balance > 0}
           onPaymentSucceeded={() => setShowConfetti(true)}
         />
         <div className="mt-6">
           <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-            RECENT DEPOSITS
+            { deposits.length === 0 ? "NO DEPOSITS YET" : "RECENT DEPOSITS"}
           </p>
           <div>
             {[...deposits]
