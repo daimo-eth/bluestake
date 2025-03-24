@@ -68,7 +68,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 font-[system-ui,sans-serif]">
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 font-[system-ui,sans-serif] mt-8">
       <h1 className="text-4xl font-bold mb-2">🔷 Bluestake</h1>
       <p className="text-sm font-medium mb-8 text-gray-600 uppercase tracking-wider">
         EARN SAFE, BLUE-CHIP YIELD IN ONE CLICK

@@ -40,7 +40,22 @@ export function DepositScreen({
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-2xl font-bold">${balance.toFixed(2)}</p>
-            <p className="text-sm text-gray-500">6.14% APY</p>
+            <p className="text-sm text-green-600 flex items-center gap-1">
+              <svg
+                className="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  d="M23 6l-9.5 9.5-5-5L1 18"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              6.14% APY
+            </p>
           </div>
           <div className="text-right">
             <p className="font-medium">{addressName}</p>
@@ -59,17 +74,27 @@ export function DepositScreen({
           onPaymentSucceeded={() => setShowConfetti(true)}
         />
         <div className="mt-6">
-          <h3 className="font-medium mb-2">Recent Deposits</h3>
-          <div className="space-y-2">
+          <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
+            RECENT DEPOSITS
+          </p>
+          <div>
             {[...deposits]
               .sort((a, b) => b.timestamp - a.timestamp)
               .map((deposit, i) => (
-                <div key={i} className="flex justify-between text-sm">
+                <a
+                  key={i}
+                  href={deposit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex justify-between text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 transition-colors"
+                >
                   <span>${deposit.amountUsd.toFixed(2)}</span>
                   <span className="text-gray-500">
-                    {formatDistanceToNow(deposit.timestamp * 1000, { addSuffix: true })}
+                    {formatDistanceToNow(deposit.timestamp * 1000, {
+                      addSuffix: true,
+                    })}
                   </span>
-                </div>
+                </a>
               ))}
           </div>
         </div>
