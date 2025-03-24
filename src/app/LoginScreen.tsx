@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { isAddress, getAddress, Address } from "viem";
-import { createPublicClient, http } from "viem";
+import { Address, getAddress, isAddress } from "viem";
 import { mainnet } from "viem/chains";
-
-const publicClient = createPublicClient({
-  chain: mainnet,
-  transport: http(),
-});
+import { usePublicClient } from "wagmi";
 
 type Props = {
   addrName: string;
@@ -18,6 +13,7 @@ type Props = {
 
 export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   const [error, setError] = useState("");
+  const publicClient = usePublicClient({ chainId: mainnet.id });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,15 +28,15 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
       return;
     }
 
-    if (addrName.endsWith(".eth")) {
+    if (publicClient && addrName.endsWith(".eth")) {
       try {
-        const address = await publicClient.getEnsAddress({
-          name: addrName.toLowerCase(),
-        });
+        const name = addrName.toLowerCase();
+        const address = await publicClient.getEnsAddress({ name });
         if (!address) {
           setError("ENS name could not be resolved");
           return;
         }
+        setAddrName(name);
         setAddr(address);
         setError("");
       } catch {
@@ -62,6 +58,7 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
           onChange={(e) => setAddrName(e.target.value)}
           placeholder="Enter ENS or address"
           autoFocus
+          autoComplete="off"
         />
         <button
           type="submit"

@@ -6,11 +6,11 @@ export const BASE_CHAIN_ID = base.id;
 export const BASE_USDC_ADDR = getAddress(
   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 );
-export const BASE_MUSDC_ADDR = getAddress(
-  "0xEdc817A28E8B93B03976FBd4a3dDBc9f7D176c22"
+export const BASE_AUSDC_ADDR = getAddress(
+  "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB"
 );
 export const BASE_DEPOSIT_CONTRACT_ADDR = getAddress(
-  "0x700535ee0AD7E17705fb44f271F9bD939f0957B4"
+  "0x2380f715c3A990c30a69Ed871992B0B10187d4C4"
 );
 
 export const DEPOSIT_CONTRACT_ABI = [

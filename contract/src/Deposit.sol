@@ -15,19 +15,32 @@ interface IERC20 {
     function approve(address spender, uint256 amount) external returns (bool);
 }
 
-/** Direct deposits to quaality stablecoin yield, eg Moonwell mUSDC */
+/** AAVE Pool interface */
+interface IPool {
+    function supply(
+        address asset,
+        uint256 amount,
+        address onBehalfOf,
+        uint16 referralCode
+    ) external;
+}
+
+/** Direct deposits to quality stablecoin yield, eg AAVE aUSDC */
 contract Deposit {
     address public immutable USDC;
-    address public immutable MUSDC;
+    address public immutable AUSDC;
+    address public immutable AAVE_POOL;
 
     event Deposited(address indexed recipientAddr, uint256 amount);
 
     constructor(
         address usdc,
-        address musdc
+        address ausdc,
+        address aavePool
     ) {
         USDC = usdc;
-        MUSDC = musdc;
+        AUSDC = ausdc;
+        AAVE_POOL = aavePool;
     }
 
     function deposit(address recipientAddr) external {
@@ -42,17 +55,17 @@ contract Deposit {
         );
         require(success, "transfer failed");
 
-        // Mint mUSDC
-        success = IERC20(USDC).approve(MUSDC, amount);
-        require(success, "mUSDC approve failed");
-        (success, ) = MUSDC.call(
-            abi.encodeWithSignature("mint(uint256)", amount)
+        // Deposit USDC to AAVE and receive aUSDC
+        success = IERC20(USDC).approve(AAVE_POOL, amount);
+        require(success, "AAVE approve failed");
+        
+        // Supply to AAVE pool
+        IPool(AAVE_POOL).supply(
+            USDC,
+            amount,
+            recipientAddr,
+            0 // referral code
         );
-        require(success, "mUSDC mint failed");
-
-        // Transfer mUSDC to recipient
-        success = IERC20(MUSDC).transfer(recipientAddr, amount);
-        require(success, "mUSDC transfer failed");
 
         emit Deposited(recipientAddr, amount);
     }

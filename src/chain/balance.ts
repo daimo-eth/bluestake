@@ -1,16 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
-import { createPublicClient, http, formatUnits, getAbiItem } from "viem";
+import { useCallback, useEffect, useState } from "react";
+import { formatUnits, getAbiItem } from "viem";
 import { base } from "viem/chains";
+import { usePublicClient } from "wagmi";
 import {
-  BASE_MUSDC_ADDR,
+  BASE_AUSDC_ADDR,
   BASE_DEPOSIT_CONTRACT_ADDR,
   DEPOSIT_CONTRACT_ABI,
 } from "./yield";
-
-const publicClient = createPublicClient({
-  chain: base,
-  transport: http(),
-});
 
 const balanceOfAbi = [
   {
@@ -32,8 +28,10 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
   const [balance, setBalance] = useState<number>();
   const [deposits, setDeposits] = useState<Deposit[]>([]);
 
+  const publicClient = usePublicClient({ chainId: base.id });
+
   const fetchBalanceAndDeposits = useCallback(async () => {
-    if (!address) {
+    if (!address || !publicClient) {
       setBalance(undefined);
       setDeposits([]);
       return;
@@ -44,7 +42,7 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
 
       const [rawBalance, logs] = await Promise.all([
         publicClient.readContract({
-          address: BASE_MUSDC_ADDR,
+          address: BASE_AUSDC_ADDR,
           abi: balanceOfAbi,
           functionName: "balanceOf",
           args: [address],
@@ -78,7 +76,7 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
       setBalance(undefined);
       setDeposits([]);
     }
-  }, [address]);
+  }, [address, publicClient]);
 
   useEffect(() => {
     fetchBalanceAndDeposits();

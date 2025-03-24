@@ -23,7 +23,6 @@ export function DepositScreen({
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
 
-
   return (
     <div className="w-full max-w-md">
       {showConfetti && (
@@ -36,35 +35,28 @@ export function DepositScreen({
         />
       )}
       <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex justify-between items-center mb-1">
+          <p className="text-2xl font-bold">
+            {balance == null ? "..." : `$${balance.toFixed(2)}`}
+          </p>
+          <p className="font-mediump px-2">{addressName}</p>
+        </div>
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-2xl font-bold">{balance == null ? "..." : `$${balance.toFixed(2)}`}</p>
-            <p className="text-sm text-green-600 flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  d="M23 6l-9.5 9.5-5-5L1 18"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              6.14% APY
+            <p className="text-sm flex items-center gap-1">
+              <span className="text-green-600">
+                <ChartIcon />
+              </span>
+              <span className="text-green-600">6.4% avg APY</span>
+              <span className="text-gray-500">powered by AAVE</span>
             </p>
           </div>
-          <div className="text-right">
-            <p className="font-medium">{addressName}</p>
-            <button
-              onClick={onLogout}
-              className="text-gray-400 hover:text-gray-600 text-sm px-2 py-1 rounded cursor-pointer"
-            >
-              logout
-            </button>
-          </div>
+          <button
+            onClick={onLogout}
+            className="text-gray-500 hover:text-gray-600 text-sm px-2 py-1 cursor-pointer -mt-1"
+          >
+            log out
+          </button>
         </div>
         <DepositButton
           recipientAddr={address}
@@ -74,7 +66,7 @@ export function DepositScreen({
         />
         <div className="mt-6">
           <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
-            { deposits.length === 0 ? "NO DEPOSITS YET" : "RECENT DEPOSITS"}
+            {deposits.length === 0 ? "NO DEPOSITS YET" : "RECENT DEPOSITS"}
           </p>
           <div>
             {[...deposits]
@@ -99,5 +91,23 @@ export function DepositScreen({
         </div>
       </div>
     </div>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        d="M23 6l-9.5 9.5-5-5L1 18"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

@@ -7,7 +7,7 @@
 
 We built this [in a few hours](https://x.com/i/broadcasts/1kvJpyBPaVwxE).
 
-We're using Moonwell mUSDC on Base plus Daimo Pay to enable universal deposits.
+We're using AAVE aUSDC on Base plus Daimo Pay to enable universal deposits.
 
 
 ### Links
