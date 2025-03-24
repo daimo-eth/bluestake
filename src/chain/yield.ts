@@ -13,7 +13,7 @@ export const BASE_DEPOSIT_CONTRACT_ADDR = getAddress(
   "0x700535ee0AD7E17705fb44f271F9bD939f0957B4"
 );
 
-const depositAbi = [
+export const DEPOSIT_CONTRACT_ABI = [
   {
     inputs: [{ name: "recipientAddr", type: "address" }],
     name: "deposit",
@@ -21,6 +21,15 @@ const depositAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "recipientAddr", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" }
+    ],
+    name: "Deposited",
+    type: "event"
+  }
 ] as const;
 
 /**
@@ -31,7 +40,7 @@ export function getDepositCall({ recipientAddr }: { recipientAddr: Address }) {
     toChain: base,
     toAddress: BASE_DEPOSIT_CONTRACT_ADDR,
     toCallData: encodeFunctionData({
-      abi: depositAbi,
+      abi: DEPOSIT_CONTRACT_ABI,
       functionName: "deposit",
       args: [recipientAddr],
     }),

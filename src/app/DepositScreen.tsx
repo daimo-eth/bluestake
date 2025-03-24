@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { DepositButton } from './DepositButton'
 import { formatDistanceToNow } from 'date-fns'
 import { Deposit } from '../chain/balance'
+import ReactConfetti from 'react-confetti'
 
 type Props = {
   address: `0x${string}`
@@ -11,8 +13,20 @@ type Props = {
 }
 
 export function DepositScreen({ address, addressName, balance, deposits, refetch }: Props) {
+  const [showConfetti, setShowConfetti] = useState(false)
+
   return (
     <div className="w-full max-w-md space-y-8">
+      {showConfetti && (
+        <ReactConfetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={200}
+          onConfettiComplete={() => setShowConfetti(false)}
+        />
+      )}
+
       {/* Balance */}
       <div className="text-center">
         <div className="text-5xl font-bold mb-2">
@@ -28,7 +42,11 @@ export function DepositScreen({ address, addressName, balance, deposits, refetch
 
       {/* Deposit Button */}
       <div className="flex justify-center">
-        <DepositButton recipientAddr={address} refetch={refetch} />
+        <DepositButton 
+          recipientAddr={address} 
+          refetch={refetch}
+          onPaymentSucceeded={() => setShowConfetti(true)}
+        />
       </div>
 
       {/* Recent Deposits */}

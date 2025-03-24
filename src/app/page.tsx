@@ -18,28 +18,27 @@ export default function Home() {
   const [error, setError] = useState('')
   const { balance, deposits, refetch } = useBalance({ address: addr })
 
-  async function validateAndSetAddr(text: string) {
-    if (!text.trim()) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!addrName.trim()) {
       setError('Please enter an address or ENS name')
       return
     }
 
-    if (isAddress(text)) {
-      setAddr(getAddress(text) as `0x${string}`)
-      setAddrName(text)
+    if (isAddress(addrName)) {
+      setAddr(getAddress(addrName) as `0x${string}`)
       setError('')
       return
     }
 
-    if (text.endsWith('.eth')) {
+    if (addrName.endsWith('.eth')) {
       try {
-        const address = await publicClient.getEnsAddress({ name: text.toLowerCase() })
+        const address = await publicClient.getEnsAddress({ name: addrName.toLowerCase() })
         if (!address) {
           setError('ENS name could not be resolved')
           return
         }
         setAddr(address)
-        setAddrName(text)
         setError('')
       } catch {
         setError('Failed to resolve ENS name')
@@ -56,7 +55,7 @@ export default function Home() {
       <p className="text-lg mb-8 text-gray-600">earn safe, blue-chip yield in one click</p>
       
       {!addr ? (
-        <div className="w-full max-w-md">
+        <form onSubmit={handleSubmit} className="w-full max-w-md">
           <div className="flex gap-2">
             <input
               type="text"
@@ -66,14 +65,14 @@ export default function Home() {
               placeholder="Enter ENS or address"
             />
             <button
-              onClick={() => validateAndSetAddr(addrName)}
+              type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
               Enter
             </button>
           </div>
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        </div>
+        </form>
       ) : (
         <DepositScreen 
           address={addr}

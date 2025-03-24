@@ -1,12 +1,16 @@
-import { useEffect, useState, useCallback } from 'react'
-import { createPublicClient, http, formatUnits } from 'viem'
-import { base } from 'viem/chains'
-import { BASE_MUSDC_ADDR } from './yield'
+import { useEffect, useState, useCallback } from "react";
+import { createPublicClient, http, formatUnits, getAbiItem } from "viem";
+import { base } from "viem/chains";
+import {
+  BASE_MUSDC_ADDR,
+  BASE_DEPOSIT_CONTRACT_ADDR,
+  DEPOSIT_CONTRACT_ABI,
+} from "./yield";
 
 const publicClient = createPublicClient({
   chain: base,
   transport: http(),
-})
+});
 
 const balanceOfAbi = [
   {
@@ -16,40 +20,75 @@ const balanceOfAbi = [
     stateMutability: "view",
     type: "function",
   },
-] as const
+] as const;
 
 export type Deposit = {
-  timestamp: number
-  amountUsd: string
-  url: string
-}
+  timestamp: number;
+  amountUsd: string;
+  url: string;
+};
 
 export function useBalance({ address }: { address?: `0x${string}` | null }) {
-  const [balance, setBalance] = useState<string>()
-  const deposits: Deposit[] = [] // TODO: implement deposits
+  const [balance, setBalance] = useState<string>();
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
 
-  const fetchBalance = useCallback(async () => {
+  const fetchBalanceAndDeposits = useCallback(async () => {
     if (!address) {
-      setBalance('0')
-      return
+      setBalance("0");
+      setDeposits([]);
+      return;
     }
 
     try {
-      const rawBalance = await publicClient.readContract({
-        address: BASE_MUSDC_ADDR,
-        abi: balanceOfAbi,
-        functionName: 'balanceOf',
-        args: [address],
-      })
-      setBalance(formatUnits(rawBalance, 6)) // USDC has 6 decimals
+      console.log(`fetching balance for ${address}`);
+      
+      const [rawBalance, logs] = await Promise.all([
+        publicClient.readContract({
+          address: BASE_MUSDC_ADDR,
+          abi: balanceOfAbi,
+          functionName: "balanceOf",
+          args: [address],
+        }),
+        publicClient.getLogs({
+          address: BASE_DEPOSIT_CONTRACT_ADDR,
+          event: getAbiItem({ abi: DEPOSIT_CONTRACT_ABI, name: "Deposited" }),
+          // args: { recipientAddr: address },
+          strict: true,
+          fromBlock: BigInt(27990000)
+        }),
+      ]);
+
+      const formattedBalance = formatUnits(rawBalance, 6); // USDC has 6 decimals
+      setBalance(formattedBalance);
+
+      const depositLogs = logs.map((log) => {
+        const timestamp = getTimestampFromBlockHeight(log.blockNumber);
+        return {
+          timestamp,
+          amountUsd: formatUnits(log.args.amount as bigint, 6),
+          url: `https://basescan.org/tx/${log.transactionHash}`,
+        };
+      });
+      setDeposits(depositLogs);
+      
+      console.log(`balance: ${formattedBalance}, num deposits: ${depositLogs.length}`);
     } catch {
-      setBalance('0')
+      setBalance(undefined);
+      setDeposits([]);
     }
-  }, [address])
+  }, [address]);
 
   useEffect(() => {
-    fetchBalance()
-  }, [fetchBalance])
+    fetchBalanceAndDeposits();
+  }, [fetchBalanceAndDeposits]);
 
-  return { balance, deposits, refetch: fetchBalance }
-} 
+  return { balance, deposits, refetch: fetchBalanceAndDeposits };
+}
+
+/**
+ * Gets timestamp for a block on Base
+ * Base has 1s block time, so we can calculate directly
+ */
+export function getTimestampFromBlockHeight(blockNum: bigint): number {
+  return 1686789347 + Number(blockNum) * 2;
+}

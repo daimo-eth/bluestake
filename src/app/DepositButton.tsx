@@ -1,28 +1,42 @@
 "use client";
 
-import { DaimoPayButton } from "@daimo/pay";
-import { type Address } from "viem";
+import { DaimoPayButton, DaimoPayCompletedEvent } from "@daimo/pay";
 import { BASE_USDC_ADDR, getDepositCall } from "../chain/yield";
 
-interface DepositButtonProps {
-  recipientAddr: Address;
-}
-export function DepositButton({ recipientAddr, refetch }: DepositButtonProps & { refetch: () => void }) {
+type Props = {
+  recipientAddr: `0x${string}`;
+  refetch: () => void;
+  onPaymentSucceeded?: (e: DaimoPayCompletedEvent) => void;
+};
+
+export function DepositButton({
+  recipientAddr,
+  refetch,
+  onPaymentSucceeded,
+}: Props) {
   const { toChain, toAddress, toCallData } = getDepositCall({ recipientAddr });
 
   return (
-    <DaimoPayButton
+    <DaimoPayButton.Custom
       appId="pay-demo"
       toChain={toChain.id}
       toToken={BASE_USDC_ADDR}
       toAddress={toAddress}
       toCallData={toCallData}
       intent="Deposit"
-      onPaymentStarted={(e) => console.log(e)}
-      onPaymentCompleted={(e) => {
-        console.log(e);
+      onPaymentCompleted={(e: DaimoPayCompletedEvent) => {
         refetch();
+        onPaymentSucceeded?.(e);
       }}
-    />
+    >
+      {({ show }) => (
+        <button
+          onClick={show}
+          className="px-8 py-4 bg-blue-500 text-white text-lg font-medium rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Deposit
+        </button>
+      )}
+    </DaimoPayButton.Custom>
   );
 }
