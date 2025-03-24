@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { isAddress, getAddress } from "viem";
+import { isAddress, getAddress, Address } from "viem";
 import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 import { useBalance } from "../chain/balance";
@@ -13,11 +13,11 @@ const publicClient = createPublicClient({
 });
 
 export default function Home() {
-  const [addrName, setAddrName] = useState(window.localStorage.addrName ?? "");
-  const [addr, setAddr] = useState<`0x${string}` | null>(
-    window.localStorage.addr
+  const [addrName, setAddrName] = useState(window?.localStorage.addrName ?? "");
+  const [addr, setAddr] = useState<Address | undefined>(
+    window?.localStorage.addr
       ? (getAddress(window.localStorage.addr) as `0x${string}`)
-      : null
+      : undefined
   );
   const [error, setError] = useState("");
   const { balance, deposits, refetch } = useBalance({ address: addr });
@@ -29,7 +29,7 @@ export default function Home() {
 
   function handleLogout() {
     setAddrName("");
-    setAddr(null);
+    setAddr(undefined);
     delete window.localStorage.addr;
     delete window.localStorage.addrName;
   }
@@ -97,7 +97,7 @@ export default function Home() {
         <DepositScreen
           address={addr}
           addressName={addrName}
-          balance={balance || "0"}
+          balance={balance}
           deposits={deposits}
           refetch={refetch}
           onLogout={handleLogout}

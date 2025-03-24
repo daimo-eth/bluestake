@@ -2,11 +2,12 @@ import { useState } from "react";
 import { DepositButton } from "./DepositButton";
 import ReactConfetti from "react-confetti";
 import { Deposit } from "@/chain/balance";
+import { formatDistanceToNow } from "date-fns";
 
 type Props = {
   address: `0x${string}`;
   addressName: string;
-  balance: string;
+  balance: number | undefined;
   deposits: Deposit[];
   refetch: () => Promise<void>;
   onLogout: () => void;
@@ -22,6 +23,8 @@ export function DepositScreen({
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
 
+  if (!balance) return null;
+
   return (
     <div className="w-full max-w-md">
       {showConfetti && (
@@ -36,7 +39,7 @@ export function DepositScreen({
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <p className="text-2xl font-bold">${Number(balance).toFixed(2)}</p>
+            <p className="text-2xl font-bold">${balance.toFixed(2)}</p>
             <p className="text-sm text-gray-500">6.14% APY</p>
           </div>
           <div className="text-right">
@@ -52,6 +55,7 @@ export function DepositScreen({
         <DepositButton
           recipientAddr={address}
           refetch={refetch}
+          showMore={balance > 0}
           onPaymentSucceeded={() => setShowConfetti(true)}
         />
         <div className="mt-6">
@@ -63,7 +67,7 @@ export function DepositScreen({
                 <div key={i} className="flex justify-between text-sm">
                   <span>${deposit.amountUsd.toFixed(2)}</span>
                   <span className="text-gray-500">
-                    {new Date(deposit.timestamp * 1000).toLocaleString()}
+                    {formatDistanceToNow(deposit.timestamp * 1000, { addSuffix: true })}
                   </span>
                 </div>
               ))}

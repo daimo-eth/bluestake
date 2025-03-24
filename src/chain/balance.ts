@@ -29,12 +29,12 @@ export type Deposit = {
 };
 
 export function useBalance({ address }: { address?: `0x${string}` | null }) {
-  const [balance, setBalance] = useState<string>();
+  const [balance, setBalance] = useState<number>();
   const [deposits, setDeposits] = useState<Deposit[]>([]);
 
   const fetchBalanceAndDeposits = useCallback(async () => {
     if (!address) {
-      setBalance("0");
+      setBalance(undefined);
       setDeposits([]);
       return;
     }
@@ -59,7 +59,7 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
       ]);
 
       const formattedBalance = formatUnits(rawBalance, 6); // USDC has 6 decimals
-      setBalance(formattedBalance);
+      setBalance(Number(formattedBalance));
 
       const depositLogs = logs.map((log) => {
         const timestamp = getTimestampFromBlockHeight(log.blockNumber);
