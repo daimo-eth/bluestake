@@ -36,4 +36,4 @@ export function getDepositCall({ recipientAddr }: { recipientAddr: Address }) {
       args: [recipientAddr],
     }),
   };
-} 
+}
