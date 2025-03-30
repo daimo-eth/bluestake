@@ -34,26 +34,33 @@ export function DepositScreen({
           onConfettiComplete={() => setShowConfetti(false)}
         />
       )}
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="flex justify-between items-center mb-1">
-          <p className="text-2xl font-bold">
+          <p className="text-2xl font-bold dark:text-white">
             {balance == null ? "..." : `$${balance.toFixed(2)}`}
           </p>
-          <p className="font-mediump px-2">{addressName}</p>
+          <p className="font-medium px-2 dark:text-white">{addressName}</p>
         </div>
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-sm flex items-center gap-1">
-              <span className="text-green-600">
+              <span className="text-green-600 dark:text-green-400">
                 <ChartIcon />
               </span>
-              <span className="text-green-600">6.4% avg APY</span>
-              <span className="text-gray-500">powered by AAVE</span>
+              <a 
+                href="https://app.aave.com/reserve-overview/?underlyingAsset=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&marketName=proto_base_v3"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:opacity-80"
+              >
+                <span className="text-green-600 dark:text-green-400">6.28% APY</span>
+                <span className="text-gray-500 dark:text-gray-400">powered by AAVE</span>
+              </a>
             </p>
           </div>
           <button
             onClick={onLogout}
-            className="text-gray-500 hover:text-gray-600 text-sm px-2 py-1 cursor-pointer -mt-1"
+            className="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 text-sm px-2 py-1 cursor-pointer -mt-1"
           >
             log out
           </button>
@@ -65,7 +72,7 @@ export function DepositScreen({
           onPaymentSucceeded={() => setShowConfetti(true)}
         />
         <div className="mt-6">
-          <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
             {deposits.length === 0 ? "NO DEPOSITS YET" : "RECENT DEPOSITS"}
           </p>
           <div>
@@ -77,10 +84,10 @@ export function DepositScreen({
                   href={deposit.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex justify-between text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 transition-colors"
+                  className="flex justify-between text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white transition-colors"
                 >
                   <span>${deposit.amountUsd.toFixed(2)}</span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 dark:text-gray-400">
                     {formatDistanceToNow(deposit.timestamp * 1000, {
                       addSuffix: true,
                     })}
