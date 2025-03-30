@@ -59,6 +59,10 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
           placeholder="Enter ENS or address"
           autoFocus
           autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          data-form-type="other"
         />
         <button
           type="submit"
