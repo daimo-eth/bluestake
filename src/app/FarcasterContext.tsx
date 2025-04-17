@@ -13,16 +13,12 @@ interface FarcasterContextType {
   profileImage?: string;
   address?: Address;
   loading: boolean;
-  isFarcasterEnvironment: boolean;
-  isSDKLoaded: boolean;
   error: string | null;
 }
 
 const FarcasterContext = createContext<FarcasterContextType>({
   isConnected: false,
   loading: true,
-  isFarcasterEnvironment: false,
-  isSDKLoaded: false,
   error: null
 });
 
@@ -36,29 +32,12 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
   const [profileImage, setProfileImage] = useState<string | undefined>();
   const [address, setAddress] = useState<Address | undefined>();
   const [loading, setLoading] = useState(true);
-  const [isFarcasterEnvironment, setIsFarcasterEnvironment] = useState(false);
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        // Check if we're in a Farcaster environment
-        const isInFarcasterEnv = window.location.href.includes("warpcast.com") || 
-          window.location.hostname.includes("farcaster") ||
-          (window.self !== window.top);
-        
-        setIsFarcasterEnvironment(isInFarcasterEnv);
-        
-        if (!isInFarcasterEnv) {
-          setLoading(false);
-          setIsSDKLoaded(true);
-          return;
-        }
-
-        // Get the context
         const context = await sdk.context;
-        console.log("Farcaster context:", context);
         
         if (context?.user?.fid) {
           setFid(context.user.fid);
@@ -67,7 +46,6 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
           setProfileImage(context.user.pfpUrl);
           setIsConnected(true);
 
-          // Attempt to get wallet address
           try {
             const nonce = uuidv4();
             const result = await sdk.actions.signIn({ 
@@ -79,7 +57,6 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
               const messageStr = result.message;
               const addressMatch = messageStr.match(/(?:0x[a-fA-F0-9]{40})/);
               if (addressMatch && addressMatch[0] && isAddress(addressMatch[0])) {
-                console.log("Extracted address from SIWE message:", addressMatch[0]);
                 setAddress(addressMatch[0] as Address);
               }
             }
@@ -88,24 +65,19 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // Call ready() with disableNativeGestures
         await sdk.actions.ready({
           disableNativeGestures: true
         });
-        console.log("Farcaster SDK ready() called successfully");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to initialize SDK");
         console.error("SDK initialization error:", err);
       } finally {
         setLoading(false);
-        setIsSDKLoaded(true);
       }
     };
 
-    if (sdk && !isSDKLoaded) {
-      load();
-    }
-  }, [isSDKLoaded]);
+    load();
+  }, []);
 
   return (
     <FarcasterContext.Provider
@@ -117,8 +89,6 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
         profileImage,
         address,
         loading,
-        isFarcasterEnvironment,
-        isSDKLoaded,
         error
       }}
     >

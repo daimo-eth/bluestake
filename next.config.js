@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["bluestake.vercel.app"],
+    domains: ["bluestake.vercel.app", "imagedelivery.net"],
   },
   async headers() {
     return [

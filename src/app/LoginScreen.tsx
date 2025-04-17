@@ -19,11 +19,9 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   const publicClient = usePublicClient({ chainId: mainnet.id });
   const { isConnected, loading, isFarcasterEnvironment, address: farcasterAddress } = useFarcaster();
   
-  // Attempt to auto-login if Farcaster is connected and has an address
   useEffect(() => {
     if (isFarcasterEnvironment && isConnected && farcasterAddress && !addrName) {
       setAutoLoginInProgress(true);
-      // Set a slight delay to allow the UI to catch up
       const timeoutId = setTimeout(() => {
         setAddr(farcasterAddress);
         setAutoLoginInProgress(false);
@@ -66,7 +64,6 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
     setError("Invalid Ethereum address format");
   }
 
-  // Show loading state during auto-login attempts
   if (autoLoginInProgress || (loading && !isConnected)) {
     return (
       <div className="w-full max-w-md flex flex-col gap-4 items-center justify-center">

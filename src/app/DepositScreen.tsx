@@ -4,6 +4,8 @@ import ReactConfetti from "react-confetti";
 import { Deposit } from "@/chain/balance";
 import { formatDistanceToNow } from "date-fns";
 import { useFarcaster } from "./FarcasterContext";
+import { sdk } from "@farcaster/frame-sdk";
+import Image from "next/image";
 
 type Props = {
   address: `0x${string}`;
@@ -24,18 +26,13 @@ export function DepositScreen({
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { isConnected, displayName, username, isFarcasterEnvironment } = useFarcaster();
+  const { isConnected, displayName, username, profileImage } = useFarcaster();
   
-  // Use Farcaster displayName if available, otherwise use addressName
-  const userDisplayName = isConnected && displayName 
-    ? displayName 
-    : addressName;
+  const userDisplayName = isConnected && displayName ? displayName : addressName;
 
-  // Handle logout with appropriate feedback
   const handleLogout = () => {
-    if (isFarcasterEnvironment) {
+    if (isConnected) {
       setIsLoggingOut(true);
-      // Add a small delay to allow for the UI to update before potentially closing
       setTimeout(() => {
         onLogout();
         setIsLoggingOut(false);
@@ -61,13 +58,26 @@ export function DepositScreen({
           <p className="text-2xl font-bold dark:text-white">
             {balance == null ? "..." : `$${balance.toFixed(2)}`}
           </p>
-          <div className="text-right">
-            <p className="font-medium px-2 dark:text-white">{userDisplayName}</p>
-            {isConnected && username && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                @{username}
-              </p>
+          <div className="flex flex-col items-end gap-2">
+            {isConnected && profileImage && (
+              <div className="relative w-10 h-10">
+                <Image 
+                  src={profileImage} 
+                  alt={userDisplayName} 
+                  fill
+                  className="rounded-full object-cover"
+                  sizes="40px"
+                />
+              </div>
             )}
+            <div className="text-right">
+              <p className="font-medium dark:text-white">{userDisplayName}</p>
+              {isConnected && username && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  @{username}
+                </p>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex justify-between items-center mb-4">
@@ -81,21 +91,29 @@ export function DepositScreen({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 hover:opacity-80"
+                onClick={(e) => {
+                  if (isConnected) {
+                    e.preventDefault();
+                    sdk.actions.openUrl("https://app.aave.com/reserve-overview/?underlyingAsset=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&marketName=proto_base_v3");
+                  }
+                }}
               >
                 <span className="text-green-600 dark:text-green-400">6.28% APY</span>
                 <span className="text-gray-500 dark:text-gray-400">powered by AAVE</span>
               </a>
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className={`text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 text-sm px-2 py-1 cursor-pointer -mt-1 ${
-              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isLoggingOut ? "closing..." : "log out"}
-          </button>
+          {!isConnected && (
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className={`text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 text-sm px-2 py-1 cursor-pointer -mt-1 ${
+                isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {isLoggingOut ? "closing..." : "log out"}
+            </button>
+          )}
         </div>
         <DepositButton
           recipientAddr={address}

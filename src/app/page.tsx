@@ -26,15 +26,10 @@ export default function Home() {
     isConnected: isFarcasterConnected,
   } = useFarcaster();
 
-  // Use Farcaster address and display information when available
-  // This handles the automatic login when a Farcaster user with connected wallet visits
   useEffect(() => {
     if (farcasterAddress && !addr && isFarcasterConnected) {
-      // Set the Ethereum address
       setAddr(farcasterAddress);
       
-      // Set a user-friendly display name for the address
-      // Use display name first, then username, then the address itself
       if (displayName) {
         setAddrName(displayName);
       } else if (username) {
@@ -45,14 +40,12 @@ export default function Home() {
     }
   }, [farcasterAddress, addr, displayName, username, isFarcasterConnected]);
 
-  // Save address to local storage when it changes
   useEffect(() => {
     if (addr) ls.addr = addr;
     if (addrName) ls.addrName = addrName;
   }, [addr, addrName]);
 
   function handleLogout() {
-    // Always clear local state
     setAddrName("");
     setAddr(undefined);
     delete ls.addr;
@@ -61,7 +54,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start p-4 font-[system-ui,sans-serif] mt-8">
-      {/* Invisible component that handles wallet connections */}
       <WalletConnector 
         onAddressChange={handleAddressChange}
         onNameChange={handleNameChange}
@@ -91,7 +83,6 @@ export default function Home() {
     </div>
   );
   
-  // Helper functions for wallet connection
   function handleAddressChange(address: Address | undefined) {
     if (address && !addr) {
       setAddr(address);
