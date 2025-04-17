@@ -17,10 +17,10 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   const [autoLoginInProgress, setAutoLoginInProgress] = useState(false);
   
   const publicClient = usePublicClient({ chainId: mainnet.id });
-  const { isConnected, loading, isFarcasterEnvironment, address: farcasterAddress } = useFarcaster();
+  const { isConnected, loading, address: farcasterAddress } = useFarcaster();
   
   useEffect(() => {
-    if (isFarcasterEnvironment && isConnected && farcasterAddress && !addrName) {
+    if (isConnected && farcasterAddress && !addrName) {
       setAutoLoginInProgress(true);
       const timeoutId = setTimeout(() => {
         setAddr(farcasterAddress);
@@ -29,7 +29,7 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [isFarcasterEnvironment, isConnected, farcasterAddress, setAddr, addrName]);
+  }, [isConnected, farcasterAddress, setAddr, addrName]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
