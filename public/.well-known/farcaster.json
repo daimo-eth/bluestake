@@ -10,7 +10,12 @@
     "iconUrl": "https://bluestake.vercel.app/bluestake-logo.png",
     "homeUrl": "https://bluestake.vercel.app/",
     "imageUrl": "https://bluestake.vercel.app/bluestake-og.png",
-    "buttonTitle": "🔹 Earn Now ",
-    "splashBackgroundColor": "#000000"
+    "buttonTitle": "🔹 Earn Now 🔹",
+    "splashBackgroundColor": "#000000",
+    "primaryCategory": "finance",
+    "heroImageUrl": "https://bluestake.vercel.app/bluestake-og.png",
+    "ogImageUrl": "https://bluestake.vercel.app/bluestake-og.png",
+    "ogTitle": "Bluestake",
+    "ogDescription": "Earn safe, blue-chip yield in one click"
   }
 } 
