@@ -14,31 +14,16 @@ interface FarcasterContextType {
   address?: Address;
   loading: boolean;
   isFarcasterEnvironment: boolean;
+  isSDKLoaded: boolean;
+  error: string | null;
 }
-
-// Define interface for window with farcaster property
-interface WindowWithFarcaster extends Window {
-  farcaster?: unknown;
-}
-
-// Helper to detect if we're in a Farcaster environment
-const detectFarcasterEnvironment = (): boolean => {
-  if (typeof window === "undefined") return false;
-  
-  return (
-    window.location.href.includes("warpcast.com") || 
-    window.location.hostname.includes("farcaster") ||
-    // Check if we're in an iframe that could be a Farcaster client
-    (window.self !== window.top) ||
-    // Check for farcaster object in window
-    !!(window as WindowWithFarcaster).farcaster
-  );
-};
 
 const FarcasterContext = createContext<FarcasterContextType>({
   isConnected: false,
   loading: true,
-  isFarcasterEnvironment: false
+  isFarcasterEnvironment: false,
+  isSDKLoaded: false,
+  error: null
 });
 
 export const useFarcaster = () => useContext(FarcasterContext);
@@ -52,79 +37,75 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
   const [address, setAddress] = useState<Address | undefined>();
   const [loading, setLoading] = useState(true);
   const [isFarcasterEnvironment, setIsFarcasterEnvironment] = useState(false);
+  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initialize Farcaster SDK and detect environment
   useEffect(() => {
-    const initFarcaster = async () => {
+    const load = async () => {
       try {
         // Check if we're in a Farcaster environment
-        const isInFarcasterEnv = detectFarcasterEnvironment();
-        console.log("Farcaster environment detected:", isInFarcasterEnv);
+        const isInFarcasterEnv = window.location.href.includes("warpcast.com") || 
+          window.location.hostname.includes("farcaster") ||
+          (window.self !== window.top);
+        
         setIsFarcasterEnvironment(isInFarcasterEnv);
         
-        // If not in a Farcaster environment, don't initialize the SDK
         if (!isInFarcasterEnv) {
           setLoading(false);
+          setIsSDKLoaded(true);
           return;
         }
 
-        try {
-          // Signal that the app is ready to be displayed
-          await sdk.actions.ready();
-          console.log("Farcaster SDK initialized successfully");
-        } catch (sdkError) {
-          console.error("Error initializing Farcaster SDK:", sdkError);
-          setIsFarcasterEnvironment(false);
-          setLoading(false);
-          return;
-        }
+        // Get the context
+        const context = await sdk.context;
+        console.log("Farcaster context:", context);
         
-        // Get user context
-        try {
-          const context = await sdk.context;
-          console.log("Farcaster context:", context);
-          
-          if (context?.user?.fid) {
-            setFid(context.user.fid);
-            setUsername(context.user.username);
-            setDisplayName(context.user.displayName);
-            setProfileImage(context.user.pfpUrl);
+        if (context?.user?.fid) {
+          setFid(context.user.fid);
+          setUsername(context.user.username);
+          setDisplayName(context.user.displayName);
+          setProfileImage(context.user.pfpUrl);
+          setIsConnected(true);
+
+          // Attempt to get wallet address
+          try {
+            const nonce = uuidv4();
+            const result = await sdk.actions.signIn({ 
+              nonce,
+              expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            });
             
-            // Set connected state since we have user info
-            setIsConnected(true);
-            
-            // Attempt to get wallet address through silent sign-in
-            try {
-              const nonce = uuidv4();
-              const result = await sdk.actions.signIn({ 
-                nonce,
-                expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-              });
-              
-              if (result) {
-                const messageStr = result.message;
-                const addressMatch = messageStr.match(/(?:0x[a-fA-F0-9]{40})/);
-                if (addressMatch && addressMatch[0] && isAddress(addressMatch[0])) {
-                  console.log("Extracted address from SIWE message:", addressMatch[0]);
-                  setAddress(addressMatch[0] as Address);
-                }
+            if (result) {
+              const messageStr = result.message;
+              const addressMatch = messageStr.match(/(?:0x[a-fA-F0-9]{40})/);
+              if (addressMatch && addressMatch[0] && isAddress(addressMatch[0])) {
+                console.log("Extracted address from SIWE message:", addressMatch[0]);
+                setAddress(addressMatch[0] as Address);
               }
-            } catch (signInError) {
-              console.warn("Silent sign-in failed:", signInError);
             }
+          } catch (signInError) {
+            console.warn("Silent sign-in failed:", signInError);
           }
-        } catch (contextError) {
-          console.error("Error getting Farcaster context:", contextError);
         }
-      } catch (error) {
-        console.error("Error in Farcaster initialization:", error);
+
+        // Call ready() with disableNativeGestures
+        await sdk.actions.ready({
+          disableNativeGestures: true
+        });
+        console.log("Farcaster SDK ready() called successfully");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to initialize SDK");
+        console.error("SDK initialization error:", err);
       } finally {
         setLoading(false);
+        setIsSDKLoaded(true);
       }
     };
 
-    initFarcaster();
-  }, []);
+    if (sdk && !isSDKLoaded) {
+      load();
+    }
+  }, [isSDKLoaded]);
 
   return (
     <FarcasterContext.Provider
@@ -136,7 +117,9 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
         profileImage,
         address,
         loading,
-        isFarcasterEnvironment
+        isFarcasterEnvironment,
+        isSDKLoaded,
+        error
       }}
     >
       {children}
