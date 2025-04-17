@@ -86,6 +86,10 @@ export default function RootLayout({
         <meta property="fc:frame:image" content={`${APP_URL}/bluestake-og.png`} />
         <meta property="fc:frame:button:1" content="🔹 Earn Now 🔹" />
         <meta property="fc:frame:post_url" content={`${APP_URL}/api/frame`} />
+        <meta property="fc:frame:embed" content="true" />
+        <meta property="fc:frame:embed:url" content={APP_URL} />
+        <meta property="fc:frame:embed:allowed_hosts" content="bluestake.vercel.app" />
+        <meta property="fc:frame:embed:aspect_ratio" content="1.91:1" />
         <meta property="og:image" content={`${APP_URL}/bluestake-og.png`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
