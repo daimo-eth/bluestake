@@ -3,6 +3,7 @@ import { DepositButton } from "./DepositButton";
 import ReactConfetti from "react-confetti";
 import { Deposit } from "@/chain/balance";
 import { formatDistanceToNow } from "date-fns";
+import { useFarcaster } from "./FarcasterContext";
 
 type Props = {
   address: `0x${string}`;
@@ -22,6 +23,27 @@ export function DepositScreen({
   onLogout,
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { isConnected, displayName, username, fid, isFarcasterEnvironment } = useFarcaster();
+  
+  // Use Farcaster displayName if available, otherwise use addressName
+  const userDisplayName = isConnected && displayName 
+    ? displayName 
+    : addressName;
+
+  // Handle logout with appropriate feedback
+  const handleLogout = () => {
+    if (isFarcasterEnvironment) {
+      setIsLoggingOut(true);
+      // Add a small delay to allow for the UI to update before potentially closing
+      setTimeout(() => {
+        onLogout();
+        setIsLoggingOut(false);
+      }, 300);
+    } else {
+      onLogout();
+    }
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -39,7 +61,14 @@ export function DepositScreen({
           <p className="text-2xl font-bold dark:text-white">
             {balance == null ? "..." : `$${balance.toFixed(2)}`}
           </p>
-          <p className="font-medium px-2 dark:text-white">{addressName}</p>
+          <div className="text-right">
+            <p className="font-medium px-2 dark:text-white">{userDisplayName}</p>
+            {isConnected && username && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
+                @{username} {fid ? `(fid:${fid})` : ''}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -59,10 +88,13 @@ export function DepositScreen({
             </p>
           </div>
           <button
-            onClick={onLogout}
-            className="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 text-sm px-2 py-1 cursor-pointer -mt-1"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 text-sm px-2 py-1 cursor-pointer -mt-1 ${
+              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            log out
+            {isLoggingOut ? "closing..." : "log out"}
           </button>
         </div>
         <DepositButton
