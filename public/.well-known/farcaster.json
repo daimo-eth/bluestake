@@ -1,33 +1,4 @@
 {
-  "app": {
-    "name": "Bluestake",
-    "description": "Earn safe, blue-chip yield in one click",
-    "short_description": "Secure yield in one click",
-    "icon_url": "https://bluestake.vercel.app/android-chrome-512x512.png",
-    "identicon_url": "https://bluestake.vercel.app/bluestake-logo.png",
-    "capabilities": [
-      "sign"
-    ],
-    "screenshots": [
-      "https://bluestake.vercel.app/bluestake-og.png"
-    ],
-    "developer": {
-      "name": "Bluestake Team"
-    },
-    "notifications": {
-      "enabled": false
-    },
-    "openGraph": {
-      "title": "Bluestake",
-      "description": "Earn safe, blue-chip yield in one click",
-      "image": {
-        "url": "https://bluestake.vercel.app/bluestake-og.png",
-        "width": 1200,
-        "height": 630,
-        "alt": "Bluestake - Earn safe, blue-chip yield in one click"
-      }
-    }
-  },
   "frame": {
     "version": "1",
     "name": "Bluestake",
