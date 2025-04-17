@@ -48,30 +48,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Prepare the response with the OG image
-    return new Response(
-      JSON.stringify({
-        message: "Success",
-        version: "vNext",
-        image: "https://bluestake.vercel.app/bluestake-og.png",
-        buttons: responseButtons,
-        // Redirect to the app when the button is clicked
-        redirect: "https://bluestake.vercel.app/",
+    // Generate the HTML response with proper meta tags
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta property="fc:frame" content="vNext" />
+          <meta property="fc:frame:image" content="https://bluestake.vercel.app/bluestake-og.png" />
+          <meta property="fc:frame:button:1" content="🔹 Earn Now 🔹" />
+          <meta property="fc:frame:button:1:action" content="post" />
+          ${
+            buttonIndex === 2
+              ? `
+            <meta property="fc:frame:button:2" content="Learn More" />
+            <meta property="fc:frame:button:2:action" content="link" />
+            <meta property="fc:frame:button:2:target" content="https://bluestake.vercel.app/learn" />
+          `
+              : ""
+          }
+          <meta property="og:image" content="https://bluestake.vercel.app/bluestake-og.png" />
+          <meta property="og:title" content="Bluestake" />
+          <meta property="og:description" content="Earn yield on your USDC" />
+        </head>
+        <body>
+          <h1>Bluestake Frame</h1>
+        </body>
+      </html>
+    `;
 
-        // Optional: For embedded frames, you can include additional information
-        embed: {
-          url: "https://bluestake.vercel.app/",
-          aspectRatio: "1.91:1",
-          allowedHosts: ["bluestake.vercel.app"],
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    return new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+      },
+    });
   } catch (error) {
     console.error("Error processing frame request:", error);
     return new Response(
@@ -90,20 +100,28 @@ export async function POST(request: NextRequest) {
 
 // GET handler for debugging - shows a simple response that the frame API is working
 export async function GET() {
-  return new Response(
-    JSON.stringify({
-      message: "Frame API endpoint is working",
-      embed: {
-        url: "https://bluestake.vercel.app/",
-        aspectRatio: "1.91:1",
-        allowedHosts: ["bluestake.vercel.app"],
-      },
-    }),
-    {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta property="fc:frame" content="vNext" />
+        <meta property="fc:frame:image" content="https://bluestake.vercel.app/bluestake-og.png" />
+        <meta property="fc:frame:button:1" content="🔹 Earn Now 🔹" />
+        <meta property="fc:frame:button:1:action" content="post" />
+        <meta property="og:image" content="https://bluestake.vercel.app/bluestake-og.png" />
+        <meta property="og:title" content="Bluestake" />
+        <meta property="og:description" content="Earn yield on your USDC" />
+      </head>
+      <body>
+        <h1>Bluestake Frame</h1>
+      </body>
+    </html>
+  `;
+
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  });
 }
