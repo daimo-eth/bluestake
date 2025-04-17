@@ -3,7 +3,7 @@
     "version": "1",
     "name": "Bluestake",
     "iconUrl": "https://bluestake.vercel.app/bluestake-logo.png",
-    "homepageUrl": "https://bluestake.vercel.app/",
+    "homeUrl": "https://bluestake.vercel.app/",
     "imageUrl": "https://bluestake.vercel.app/bluestake-og.png",
     "buttonTitle": "🔹 Earn Now ",
     "splashBackgroundColor": "#000000"
