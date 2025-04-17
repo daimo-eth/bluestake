@@ -24,7 +24,7 @@ export function DepositScreen({
 }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { isConnected, displayName, username, fid, isFarcasterEnvironment } = useFarcaster();
+  const { isConnected, displayName, username, isFarcasterEnvironment } = useFarcaster();
   
   // Use Farcaster displayName if available, otherwise use addressName
   const userDisplayName = isConnected && displayName 
