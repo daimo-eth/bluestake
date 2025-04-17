@@ -24,15 +24,12 @@ export default function Home() {
     username, 
     displayName,
     isConnected: isFarcasterConnected,
-    logout: farcasterLogout,
-    isFarcasterEnvironment,
-    autoSignInAttempted
   } = useFarcaster();
 
   // Use Farcaster address and display information when available
   // This handles the automatic login when a Farcaster user with connected wallet visits
   useEffect(() => {
-    if (farcasterAddress && !addr && isFarcasterConnected && autoSignInAttempted) {
+    if (farcasterAddress && !addr && isFarcasterConnected) {
       // Set the Ethereum address
       setAddr(farcasterAddress);
       
@@ -46,7 +43,7 @@ export default function Home() {
         setAddrName(farcasterAddress);
       }
     }
-  }, [farcasterAddress, addr, displayName, username, isFarcasterConnected, autoSignInAttempted]);
+  }, [farcasterAddress, addr, displayName, username, isFarcasterConnected]);
 
   // Save address to local storage when it changes
   useEffect(() => {
@@ -55,14 +52,6 @@ export default function Home() {
   }, [addr, addrName]);
 
   function handleLogout() {
-    // First, determine if we're using a Farcaster connection
-    const isUsingFarcaster = isFarcasterConnected && isFarcasterEnvironment && addr === farcasterAddress;
-    
-    // If using Farcaster, call the Farcaster logout method
-    if (isUsingFarcaster) {
-      farcasterLogout();
-    }
-    
     // Always clear local state
     setAddrName("");
     setAddr(undefined);
