@@ -65,7 +65,7 @@ export function DepositScreen({
             <p className="font-medium px-2 dark:text-white">{userDisplayName}</p>
             {isConnected && username && (
               <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                @{username} {fid ? `(fid:${fid})` : ''}
+                @{username}
               </p>
             )}
           </div>
