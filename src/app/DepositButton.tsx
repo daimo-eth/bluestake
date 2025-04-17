@@ -25,7 +25,7 @@ export function DepositButton({
       toToken={BASE_USDC_ADDR}
       toAddress={toAddress}
       toCallData={toCallData}
-      paymentOptions={["Coinbase"]}
+      paymentOptions={[]}
       intent="Deposit"
       onPaymentCompleted={(e: DaimoPayCompletedEvent) => {
         refetch();
