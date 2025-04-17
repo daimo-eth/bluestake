@@ -135,6 +135,12 @@ export function DepositScreen({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex justify-between text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white transition-colors"
+                  onClick={(e) => {
+                    if (isConnected) {
+                      e.preventDefault();
+                      sdk.actions.openUrl(deposit.url);
+                    }
+                  }}
                 >
                   <span>${deposit.amountUsd.toFixed(2)}</span>
                   <span className="text-gray-500 dark:text-gray-400">
