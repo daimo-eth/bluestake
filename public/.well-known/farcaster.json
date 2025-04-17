@@ -1,4 +1,9 @@
 {
+    "accountAssociation": {
+      "header": "eyJmaWQiOjkzMzg0NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDA2MjhmOURCODJGNTc5MDgzOTc3NzgyMGRDNkQ0MzIwMDA4ZDBlRTkifQ",
+      "payload": "eyJkb21haW4iOiJibHVlc3Rha2UudmVyY2VsLmFwcCJ9",
+      "signature": "MHg2NzExNjUxMzQyZmNjNTZlZjliODI2NTU4YWNiMjQ4ZWFmYWEzZDNhOTBmMDJmOGMxZmI3ZTMyYTliMDJmNTIyNzFmOTI5ZDc1ZjM2M2FlYzRhMzZiODgwYTA5YjA2NjE3ZmQ4MDE0NzlkNDliZTJiODUzM2E3MDczYzRjZDc4ZjFj"
+    },
   "frame": {
     "version": "1",
     "name": "Bluestake",
