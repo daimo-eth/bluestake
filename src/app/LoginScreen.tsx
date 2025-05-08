@@ -19,6 +19,7 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   const publicClient = usePublicClient({ chainId: mainnet.id });
   const { isConnected, loading, address: farcasterAddress } = useFarcaster();
   
+  // Auto-login for Farcaster users only if connected
   useEffect(() => {
     if (isConnected && farcasterAddress && !addrName) {
       setAutoLoginInProgress(true);

@@ -7,25 +7,45 @@ import { DepositScreen } from "./DepositScreen";
 import { LoginScreen } from "./LoginScreen";
 import { useFarcaster } from "./FarcasterContext";
 import { WalletConnector } from "./WalletConnector";
-
-const ls =
-  typeof window === "undefined"
-    ? ({} as Record<string, string>)
-    : window.localStorage;
+import { useDisconnect } from "wagmi";
 
 export default function Home() {
-  const [addrName, setAddrName] = useState(ls.addrName ?? "");
-  const [addr, setAddr] = useState<Address | undefined>(
-    ls.addr ? (getAddress(ls.addr) as `0x${string}`) : undefined
-  );
-  const { balance, deposits, refetch } = useBalance({ address: addr });
+  const [addrName, setAddrName] = useState("");
+  const [addr, setAddr] = useState<Address | undefined>(undefined);
+  const { balance, transactions, refetch } = useBalance({ address: addr });
   const { 
     address: farcasterAddress, 
     username, 
     displayName,
     isConnected: isFarcasterConnected,
   } = useFarcaster();
+  const { disconnect } = useDisconnect();
 
+  // Load saved address from localStorage on initial load only for non-Farcaster users
+  useEffect(() => {
+    // If we're not using Farcaster, try to load from localStorage
+    if (!isFarcasterConnected && !addr && typeof window !== "undefined") {
+      const savedAddr = localStorage.getItem("addr");
+      const savedAddrName = localStorage.getItem("addrName");
+      
+      if (savedAddr) {
+        try {
+          setAddr(getAddress(savedAddr) as `0x${string}`);
+          if (savedAddrName) {
+            setAddrName(savedAddrName);
+          } else {
+            setAddrName(savedAddr);
+          }
+        } catch {
+          // Invalid address in localStorage
+          localStorage.removeItem("addr");
+          localStorage.removeItem("addrName");
+        }
+      }
+    }
+  }, [isFarcasterConnected, addr]);
+
+  // Auto-connect for Farcaster users
   useEffect(() => {
     if (farcasterAddress && !addr && isFarcasterConnected) {
       setAddr(farcasterAddress);
@@ -40,16 +60,35 @@ export default function Home() {
     }
   }, [farcasterAddress, addr, displayName, username, isFarcasterConnected]);
 
+  // Save address to localStorage when it changes
   useEffect(() => {
-    if (addr) ls.addr = addr;
-    if (addrName) ls.addrName = addrName;
-  }, [addr, addrName]);
+    if (addr && !isFarcasterConnected) {
+      localStorage.setItem("addr", addr);
+      if (addrName) {
+        localStorage.setItem("addrName", addrName);
+      }
+    }
+  }, [addr, addrName, isFarcasterConnected]);
 
-  function handleLogout() {
+  async function handleLogout() {
+    // First disconnect the wallet (do this first to avoid UI flickering)
+    try {
+      disconnect();
+      // Wait a small amount of time to ensure disconnect completes
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (e) {
+      console.error("Error disconnecting wallet:", e);
+    }
+    
+    // Then clear state and localStorage
     setAddrName("");
     setAddr(undefined);
-    delete ls.addr;
-    delete ls.addrName;
+    
+    // Clear localStorage for non-Farcaster users
+    if (!isFarcasterConnected) {
+      localStorage.removeItem("addr");
+      localStorage.removeItem("addrName");
+    }
   }
 
   return (
@@ -75,7 +114,7 @@ export default function Home() {
           address={addr}
           addressName={addrName}
           balance={balance}
-          deposits={deposits}
+          transactions={transactions}
           refetch={refetch}
           onLogout={handleLogout}
         />

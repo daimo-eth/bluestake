@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DepositButton } from "./DepositButton";
+import { WithdrawButton } from "./WithdrawButton";
 import ReactConfetti from "react-confetti";
-import { Deposit } from "@/chain/balance";
+import { Transaction } from "@/chain/balance";
 import { formatDistanceToNow } from "date-fns";
 import { useFarcaster } from "./FarcasterContext";
 import { sdk } from "@farcaster/frame-sdk";
@@ -11,7 +12,7 @@ type Props = {
   address: `0x${string}`;
   addressName: string;
   balance: number | undefined;
-  deposits: Deposit[];
+  transactions: Transaction[];
   refetch: () => Promise<void>;
   onLogout: () => void;
 };
@@ -20,7 +21,7 @@ export function DepositScreen({
   address,
   addressName,
   balance,
-  deposits,
+  transactions,
   refetch,
   onLogout,
 }: Props) {
@@ -38,7 +39,12 @@ export function DepositScreen({
         setIsLoggingOut(false);
       }, 300);
     } else {
-      onLogout();
+      setIsLoggingOut(true);
+      // For non-Farcaster users, allow a small delay to avoid UI flicker
+      setTimeout(() => {
+        onLogout();
+        setIsLoggingOut(false);
+      }, 100);
     }
   };
 
@@ -83,7 +89,7 @@ export function DepositScreen({
         <div className="flex justify-between items-center mb-4">
           <div>
             <p className="text-sm flex items-center gap-1">
-              <span className="text-green-600 dark:text-green-400">
+              <span className="text-blue-600 dark:text-blue-400">
                 <ChartIcon />
               </span>
               <a 
@@ -98,7 +104,7 @@ export function DepositScreen({
                   }
                 }}
               >
-                <span className="text-green-600 dark:text-green-400">6.28% APY</span>
+                <span className="text-blue-600 dark:text-blue-400">6.28% APY</span>
                 <span className="text-gray-500 dark:text-gray-400">powered by AAVE</span>
               </a>
             </p>
@@ -115,41 +121,68 @@ export function DepositScreen({
             </button>
           )}
         </div>
-        <DepositButton
-          recipientAddr={address}
-          refetch={refetch}
-          showMore={balance != null && balance > 0}
-          onPaymentSucceeded={() => setShowConfetti(true)}
-        />
+        
+        {/* Action buttons */}
+        <div className="space-y-3">
+          <DepositButton
+            recipientAddr={address}
+            refetch={refetch}
+            showMore={balance != null && balance > 0}
+            onPaymentSucceeded={() => setShowConfetti(true)}
+          />
+          
+          <WithdrawButton
+            balance={balance}
+            refetch={refetch}
+            address={address}
+          />
+        </div>
+        
         <div className="mt-6">
           <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
-            {deposits.length === 0 ? "NO DEPOSITS YET" : "RECENT DEPOSITS"}
+            {transactions.length === 0 ? "NO TRANSACTIONS YET" : "RECENT TRANSACTIONS"}
           </p>
           <div>
-            {[...deposits]
-              .sort((a, b) => b.timestamp - a.timestamp)
-              .map((deposit, i) => (
+            {transactions.map((transaction, i) => {
+              const isWithdrawal = transaction.type === "withdraw";
+              
+              return (
                 <a
                   key={i}
-                  href={deposit.url}
+                  href={transaction.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex justify-between text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white transition-colors"
+                  className="flex justify-between items-center text-sm py-3 px-6 -mx-6 rounded hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white transition-colors"
                   onClick={(e) => {
                     if (isConnected) {
                       e.preventDefault();
-                      sdk.actions.openUrl(deposit.url);
+                      sdk.actions.openUrl(transaction.url);
                     }
                   }}
                 >
-                  <span>${deposit.amountUsd.toFixed(2)}</span>
+                  <div className="flex items-center">
+                    {isWithdrawal ? (
+                      <span className="mr-2 text-amber-500 dark:text-amber-400">
+                        <UpArrowIcon />
+                      </span>
+                    ) : (
+                      <span className="mr-2 text-blue-600 dark:text-blue-400">
+                        <DownArrowIcon />
+                      </span>
+                    )}
+                    <span>${transaction.amountUsd.toFixed(2)}</span>
+                    <span className={`ml-2 text-xs ${isWithdrawal ? 'text-amber-500 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                      {isWithdrawal ? 'Withdraw' : 'Deposit'}
+                    </span>
+                  </div>
                   <span className="text-gray-500 dark:text-gray-400">
-                    {formatDistanceToNow(deposit.timestamp * 1000, {
+                    {formatDistanceToNow(transaction.timestamp * 1000, {
                       addSuffix: true,
                     })}
                   </span>
                 </a>
-              ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -168,6 +201,42 @@ function ChartIcon() {
     >
       <path
         d="M23 6l-9.5 9.5-5-5L1 18"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DownArrowIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        d="M12 5v14M5 12l7 7 7-7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function UpArrowIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        d="M12 19V5M5 12l7-7 7 7"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

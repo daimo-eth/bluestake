@@ -5,7 +5,9 @@ import { usePublicClient } from "wagmi";
 import {
   BASE_AUSDC_ADDR,
   BASE_DEPOSIT_CONTRACT_ADDR,
+  BASE_WITHDRAW_CONTRACT_ADDR,
   DEPOSIT_CONTRACT_ABI,
+  BASE_USDC_ADDR,
 } from "./yield";
 
 const balanceOfAbi = [
@@ -18,39 +20,73 @@ const balanceOfAbi = [
   },
 ] as const;
 
-export type Deposit = {
+// Aave Withdraw event
+const withdrawEventAbi = [
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, name: "reserve", type: "address" },
+      { indexed: true, name: "user", type: "address" },
+      { indexed: true, name: "to", type: "address" },
+      { indexed: false, name: "amount", type: "uint256" },
+    ],
+    name: "Withdraw",
+    type: "event",
+  },
+] as const;
+
+export type TransactionType = "deposit" | "withdraw";
+
+export type Transaction = {
   timestamp: number;
   amountUsd: number;
   url: string;
+  type: TransactionType;
 };
 
 export function useBalance({ address }: { address?: `0x${string}` | null }) {
   const [balance, setBalance] = useState<number>();
-  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const publicClient = usePublicClient({ chainId: base.id });
 
-  const fetchBalanceAndDeposits = useCallback(async () => {
+  const fetchBalanceAndTransactions = useCallback(async () => {
     if (!address || !publicClient) {
       setBalance(undefined);
-      setDeposits([]);
+      setTransactions([]);
       return;
     }
 
     try {
       console.log(`fetching balance for ${address}`);
 
-      const [rawBalance, logs] = await Promise.all([
+      const [rawBalance, depositLogs, withdrawLogs] = await Promise.all([
+        // Get aUSDC balance
         publicClient.readContract({
           address: BASE_AUSDC_ADDR,
           abi: balanceOfAbi,
           functionName: "balanceOf",
           args: [address],
         }),
+
+        // Get deposit events
         publicClient.getLogs({
           address: BASE_DEPOSIT_CONTRACT_ADDR,
           event: getAbiItem({ abi: DEPOSIT_CONTRACT_ABI, name: "Deposited" }),
           args: { recipientAddr: address },
+          strict: true,
+          fromBlock: BigInt(27990000),
+        }),
+
+        // Get withdraw events where user is the one withdrawing
+        publicClient.getLogs({
+          address: BASE_WITHDRAW_CONTRACT_ADDR,
+          event: getAbiItem({ abi: withdrawEventAbi, name: "Withdraw" }),
+          args: {
+            reserve: BASE_USDC_ADDR,
+            user: address,
+            to: address,
+          },
           strict: true,
           fromBlock: BigInt(27990000),
         }),
@@ -59,30 +95,70 @@ export function useBalance({ address }: { address?: `0x${string}` | null }) {
       const formattedBalance = formatUnits(rawBalance, 6); // USDC has 6 decimals
       setBalance(Number(formattedBalance));
 
-      const depositLogs = logs.map((log) => {
+      // Process deposit logs
+      const deposits: Transaction[] = depositLogs.map((log) => {
         const timestamp = getTimestampFromBlockHeight(log.blockNumber);
+        // Make sure we can access the amount property safely
+        let amountUsd = 0;
+        try {
+          if (log.args && log.args.amount) {
+            amountUsd = Number(formatUnits(log.args.amount as bigint, 6));
+          }
+        } catch (e) {
+          console.error("Error processing deposit amount:", e);
+        }
+
         return {
           timestamp,
-          amountUsd: Number(formatUnits(log.args.amount as bigint, 6)),
+          amountUsd,
           url: `https://basescan.org/tx/${log.transactionHash}`,
+          type: "deposit",
         };
       });
-      setDeposits(depositLogs);
+
+      // Process withdrawal logs
+      const withdrawals: Transaction[] = withdrawLogs.map((log) => {
+        const timestamp = getTimestampFromBlockHeight(log.blockNumber);
+        // Make sure we can access the amount property safely
+        let amountUsd = 0;
+        try {
+          if (log.args && log.args.amount) {
+            amountUsd = Number(formatUnits(log.args.amount as bigint, 6));
+          }
+        } catch (e) {
+          console.error("Error processing withdrawal amount:", e);
+        }
+
+        return {
+          timestamp,
+          amountUsd,
+          url: `https://basescan.org/tx/${log.transactionHash}`,
+          type: "withdraw",
+        };
+      });
+
+      // Combine and sort all transactions
+      const allTransactions = [...deposits, ...withdrawals].sort(
+        (a, b) => b.timestamp - a.timestamp
+      );
+
+      setTransactions(allTransactions);
 
       console.log(
-        `balance: ${formattedBalance}, num deposits: ${depositLogs.length}`
+        `balance: ${formattedBalance}, transactions: ${allTransactions.length} (${deposits.length} deposits, ${withdrawals.length} withdrawals)`
       );
-    } catch {
+    } catch (error) {
+      console.error("Error fetching balance or transactions:", error);
       setBalance(undefined);
-      setDeposits([]);
+      setTransactions([]);
     }
   }, [address, publicClient]);
 
   useEffect(() => {
-    fetchBalanceAndDeposits();
-  }, [fetchBalanceAndDeposits]);
+    fetchBalanceAndTransactions();
+  }, [fetchBalanceAndTransactions]);
 
-  return { balance, deposits, refetch: fetchBalanceAndDeposits };
+  return { balance, transactions, refetch: fetchBalanceAndTransactions };
 }
 
 /**
