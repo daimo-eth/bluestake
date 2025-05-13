@@ -1,12 +1,12 @@
 "use client";
 
-import { DaimoPayButton, DaimoPayCompletedEvent } from "@daimo/pay";
+import { DaimoPayButton } from "@daimo/pay";
 import { BASE_USDC_ADDR, getDepositCall } from "../chain/yield";
 
 type Props = {
   recipientAddr: `0x${string}`;
   refetch: () => void;
-  onPaymentSucceeded?: (e: DaimoPayCompletedEvent) => void;
+  onPaymentSucceeded?: () => void;
   showMore: boolean;
 };
 
@@ -27,9 +27,9 @@ export function DepositButton({
       toCallData={toCallData}
       paymentOptions={[]}
       intent="Deposit"
-      onPaymentCompleted={(e: DaimoPayCompletedEvent) => {
+      onPaymentCompleted={() => {
         refetch();
-        onPaymentSucceeded?.(e);
+        onPaymentSucceeded?.();
       }}
     >
       {({ show }) => (
