@@ -26,6 +26,7 @@ export function DepositButton({
       toAddress={toAddress}
       toCallData={toCallData}
       paymentOptions={["Coinbase", "CashApp", "Revolut", "Venmo", "Wise", "MercadoPago"]}
+      redirectReturnUrl="https://bluestake.vercel.app/"
       intent="Deposit"
       onPaymentCompleted={() => {
         refetch();
