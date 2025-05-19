@@ -40,7 +40,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <DaimoPayProvider payApiUrl={process.env.NEXT_PUBLIC_PAY_API_URL}>
+        <DaimoPayProvider >
           <FarcasterProvider>
             {mounted && children}
           </FarcasterProvider>
