@@ -7,6 +7,7 @@ import { WagmiProvider, createConfig, http } from "wagmi";
 import { arbitrum, base, mainnet, optimism, polygon } from "viem/chains";
 import { FarcasterProvider } from "./FarcasterContext";
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
+import { FarcasterSolanaProvider } from "@farcaster/mini-app-solana";
 
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;;
 
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => setMounted(true), []);
 
   return (
+    <FarcasterSolanaProvider endpoint={"https://api.mainnet-beta.solana.com"}>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <DaimoPayProvider >
@@ -47,5 +49,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </DaimoPayProvider>
       </QueryClientProvider>
     </WagmiProvider>
+    </FarcasterSolanaProvider>
   );
 }

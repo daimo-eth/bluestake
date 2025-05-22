@@ -2,6 +2,7 @@
 
 import { DaimoPayButton } from "@daimo/pay";
 import { BASE_USDC_ADDR, getDepositCall } from "../chain/yield";
+import { useFarcaster } from "./FarcasterContext";
 
 type Props = {
   recipientAddr: `0x${string}`;
@@ -17,6 +18,24 @@ export function DepositButton({
   showMore,
 }: Props) {
   const { toChain, toAddress, toCallData } = getDepositCall({ recipientAddr });
+  const { isConnected } = useFarcaster();
+
+  const paymentOptions: (
+    | "Coinbase"
+    | "Solana"
+    | "CashApp"
+    | "Revolut"
+    | "Venmo"
+    | "Wise"
+    | "MercadoPago"
+    | "Daimo"
+    | "RampNetwork"
+    | "Binance"
+    | "ExternalChains"
+    | "Lemon"
+  )[] = isConnected
+    ? ["Solana"]
+    : ["Coinbase", "CashApp", "Revolut", "Venmo", "Wise", "MercadoPago", "Solana"];
 
   return (
     <DaimoPayButton.Custom
@@ -25,9 +44,9 @@ export function DepositButton({
       toToken={BASE_USDC_ADDR}
       toAddress={toAddress}
       toCallData={toCallData}
-      paymentOptions={["Coinbase", "CashApp", "Revolut", "Venmo", "Wise", "MercadoPago", "Solana"]}
+      paymentOptions={paymentOptions}
       redirectReturnUrl="https://bluestake.vercel.app/"
-      intent="Deposit"
+      intent="Earn More"
       onPaymentCompleted={() => {
         refetch();
         onPaymentSucceeded?.();
