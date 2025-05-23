@@ -5,6 +5,7 @@ import { Address, getAddress, isAddress } from "viem";
 import { mainnet } from "viem/chains";
 import { usePublicClient } from "wagmi";
 import { useFarcaster } from "./FarcasterContext";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 type Props = {
   addrName: string;
@@ -18,9 +19,13 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   
   const publicClient = usePublicClient({ chainId: mainnet.id });
   const { isConnected, loading, address: farcasterAddress } = useFarcaster();
+  const { connected: isSolanaConnected, select: selectSolanaWallet, wallets: solanaWallets } = useWallet();
   
   // Auto-login for Farcaster users only if connected
   useEffect(() => {
+    if (!isSolanaConnected && solanaWallets.length > 0) {
+      selectSolanaWallet(solanaWallets[0].adapter.name);
+    }
     if (isConnected && farcasterAddress && !addrName) {
       setAutoLoginInProgress(true);
       const timeoutId = setTimeout(() => {
