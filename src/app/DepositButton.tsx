@@ -47,6 +47,7 @@ export function DepositButton({
       paymentOptions={paymentOptions}
       redirectReturnUrl="https://bluestake.vercel.app/"
       intent="Earn More"
+      connectedWalletOnly={isConnected}
       onPaymentCompleted={() => {
         refetch();
         onPaymentSucceeded?.();
