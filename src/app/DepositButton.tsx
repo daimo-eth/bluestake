@@ -35,7 +35,7 @@ export function DepositButton({
     | "Lemon"
   )[] = isConnected
     ? ["Solana"]
-    : ["Coinbase", "CashApp", "Revolut", "Venmo", "Wise", "MercadoPago", "Solana"];
+    : ["Coinbase", "CashApp", "Revolut", "Venmo", "Wise", "MercadoPago", "Solana", "ExternalChains"];
 
   return (
     <DaimoPayButton.Custom
