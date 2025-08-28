@@ -22,7 +22,9 @@ const daimoConfig = getDefaultConfig({
     [arbitrum.id]: http(`https://arb-mainnet.g.alchemy.com/v2/${alchemyKey}`),
     [polygon.id]: http(`https://polygon-mainnet.g.alchemy.com/v2/${alchemyKey}`)
   },
-  additionalConnectors: [porto()]
+  additionalConnectors: [porto({
+    merchantRpcUrl: "https://bluestake.vercel.app/rpc"
+  })]
 });
 
 // Create the final Wagmi config with Farcaster connector
