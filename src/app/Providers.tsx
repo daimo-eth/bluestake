@@ -8,6 +8,7 @@ import { arbitrum, base, mainnet, optimism, polygon } from "viem/chains";
 import { FarcasterProvider } from "./FarcasterContext";
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { FarcasterSolanaProvider } from "@farcaster/mini-app-solana";
+import { porto } from "porto/wagmi";
 
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;;
 
@@ -20,7 +21,8 @@ const daimoConfig = getDefaultConfig({
     [optimism.id]: http(`https://opt-mainnet.g.alchemy.com/v2/${alchemyKey}`),
     [arbitrum.id]: http(`https://arb-mainnet.g.alchemy.com/v2/${alchemyKey}`),
     [polygon.id]: http(`https://polygon-mainnet.g.alchemy.com/v2/${alchemyKey}`)
-  }
+  },
+  additionalConnectors: [porto()]
 });
 
 // Create the final Wagmi config with Farcaster connector

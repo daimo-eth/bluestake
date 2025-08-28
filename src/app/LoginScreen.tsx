@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Address, getAddress, isAddress } from "viem";
 import { mainnet } from "viem/chains";
-import { usePublicClient } from "wagmi";
+import { useAccount, useConnect, usePublicClient } from "wagmi";
 import { useFarcaster } from "./FarcasterContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 
@@ -16,10 +16,13 @@ type Props = {
 export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
   const [error, setError] = useState("");
   const [autoLoginInProgress, setAutoLoginInProgress] = useState(false);
+  const [portoLoginRequested, setPortoLoginRequested] = useState(false);
   
   const publicClient = usePublicClient({ chainId: mainnet.id });
   const { isConnected, loading, address: farcasterAddress } = useFarcaster();
   const { connected: isSolanaConnected, select: selectSolanaWallet, wallets: solanaWallets } = useWallet();
+  const { address: connectedAddress, connector } = useAccount();
+  const { connect, connectors, isPending: isConnectingWithPorto, error: portoConnectError } = useConnect();
   
   // Auto-login for Farcaster users only if connected
   useEffect(() => {
@@ -36,6 +39,36 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
       return () => clearTimeout(timeoutId);
     }
   }, [isConnected, farcasterAddress, setAddr, addrName]);
+
+  // When user clicks Porto login and it succeeds, set the destination address
+  useEffect(() => {
+    if (!portoLoginRequested) return;
+    if (connectedAddress && connector && (connector.id === "porto" || connector.name?.toLowerCase() === "porto")) {
+      setAddr(connectedAddress as Address);
+      setAddrName(connectedAddress);
+      setError("");
+      setPortoLoginRequested(false);
+    }
+  }, [portoLoginRequested, connectedAddress, connector, setAddr, setAddrName]);
+
+  // Propagate connector errors
+  useEffect(() => {
+    if (portoConnectError) {
+      setError(portoConnectError.message || "Failed to connect with Porto");
+      setPortoLoginRequested(false);
+    }
+  }, [portoConnectError]);
+
+  function handlePortoSignIn() {
+    const portoConnector = connectors?.find((c) => c.id === "porto" || c.name?.toLowerCase() === "porto");
+    if (!portoConnector) {
+      setError("Porto connector unavailable on this device");
+      return;
+    }
+    setError("");
+    setPortoLoginRequested(true);
+    connect({ connector: portoConnector });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +145,23 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
         </div>
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       </form>
+      {/* Desktop-only Porto sign-in */}
+      <div className="hidden md:block w-full">
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span>or</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+        <button
+          type="button"
+          onClick={handlePortoSignIn}
+          disabled={isConnectingWithPorto}
+          className="mt-3 w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+        
+        >
+          {isConnectingWithPorto ? "Connecting to Porto..." : "Sign in with Porto"}
+        </button>
+      </div>
     </div>
   );
 } 

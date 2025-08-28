@@ -100,7 +100,7 @@ export default function Home() {
       <h1 className="text-3xl mb-1">🔷</h1>
       <h1 className="text-4xl font-bold mb-2">Bluestake</h1>
       <p className="text-sm font-medium mb-8 text-gray-600 uppercase tracking-wider">
-        EARN SAFE, BLUE-CHIP YIELD IN ONE CLICK
+        Convert any currency to Digital dollars earning safe yield
       </p>
 
       {!addr ? (

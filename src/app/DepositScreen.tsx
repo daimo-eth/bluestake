@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAddress, getAddress } from "viem";
 import { DepositButton } from "./DepositButton";
 import { WithdrawButton } from "./WithdrawButton";
 import ReactConfetti from "react-confetti";
@@ -29,7 +30,16 @@ export function DepositScreen({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isConnected, displayName, username, profileImage } = useFarcaster();
   
-  const userDisplayName = isConnected && displayName ? displayName : addressName;
+  const shortenIfAddress = (value: string) => {
+    if (!value) return value;
+    if (isAddress(value)) {
+      const checksummed = getAddress(value);
+      return `${checksummed.slice(0, 6)}…${checksummed.slice(-4)}`;
+    }
+    return value;
+  };
+
+  const userDisplayName = isConnected && displayName ? displayName : shortenIfAddress(addressName);
 
   const handleLogout = () => {
     if (isConnected) {
