@@ -9,6 +9,7 @@ import { FarcasterProvider } from "./FarcasterContext";
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { FarcasterSolanaProvider } from "@farcaster/mini-app-solana";
 import { porto } from "porto/wagmi";
+import { Porto } from "porto";
 
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;;
 
@@ -22,9 +23,7 @@ const daimoConfig = getDefaultConfig({
     [arbitrum.id]: http(`https://arb-mainnet.g.alchemy.com/v2/${alchemyKey}`),
     [polygon.id]: http(`https://polygon-mainnet.g.alchemy.com/v2/${alchemyKey}`)
   },
-  additionalConnectors: [porto({
-    merchantRpcUrl: "https://bluestake.vercel.app/rpc"
-  })]
+ // additionalConnectors: []
 });
 
 // Create the final Wagmi config with Farcaster connector
@@ -41,6 +40,13 @@ const queryClient = new QueryClient();
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const porto = Porto.create({
+      merchantRpcUrl: "https://daimo.ngrok.app/rpc"
+    })
+    console.log('Created porto', porto);
+  }, []);
 
   return (
     <FarcasterSolanaProvider endpoint={"https://api.mainnet-beta.solana.com"}>
