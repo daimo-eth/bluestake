@@ -145,8 +145,8 @@ export function LoginScreen({ addrName, setAddrName, setAddr }: Props) {
         </div>
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       </form>
-      {/* Desktop-only Porto sign-in */}
-      <div className="hidden md:block w-full">
+      {/* Porto sign-in */}
+      <div className="w-full">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <div className="flex-1 h-px bg-gray-200" />
           <span>or</span>
