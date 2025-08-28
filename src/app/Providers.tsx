@@ -8,7 +8,6 @@ import { arbitrum, base, mainnet, optimism, polygon } from "viem/chains";
 import { FarcasterProvider } from "./FarcasterContext";
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { FarcasterSolanaProvider } from "@farcaster/mini-app-solana";
-import { porto } from "porto/wagmi";
 import { Porto } from "porto";
 
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;;
