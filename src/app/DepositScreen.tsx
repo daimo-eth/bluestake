@@ -41,6 +41,22 @@ export function DepositScreen({
 
   const userDisplayName = isConnected && displayName ? displayName : shortenIfAddress(addressName);
 
+  async function handleDepositSucceeded() {
+    // Show success animation immediately
+    setShowConfetti(true);
+
+    // Refetch immediately, then poll a few times to catch indexer delays
+    try {
+      await refetch();
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await refetch();
+      }
+    } catch {
+      // noop – UI will reflect on next natural refresh
+    }
+  }
+
   const handleLogout = () => {
     if (isConnected) {
       setIsLoggingOut(true);
@@ -138,7 +154,7 @@ export function DepositScreen({
             recipientAddr={address}
             refetch={refetch}
             showMore={balance != null && balance > 0}
-            onPaymentSucceeded={() => setShowConfetti(true)}
+            onPaymentSucceeded={handleDepositSucceeded}
           />
           
           <WithdrawButton
