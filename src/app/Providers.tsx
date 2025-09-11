@@ -42,7 +42,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const porto = Porto.create({
-      merchantRpcUrl: "https://bluestake.vercel.app/rpc"
+      merchantRpcUrl: "https://daimo.ngrok.app/merchant"
     })
     console.log('Created porto', porto);
   }, []);
