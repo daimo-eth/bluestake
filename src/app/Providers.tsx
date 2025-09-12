@@ -8,7 +8,8 @@ import { arbitrum, base, mainnet, optimism, polygon } from "viem/chains";
 import { FarcasterProvider } from "./FarcasterContext";
 import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { FarcasterSolanaProvider } from "@farcaster/mini-app-solana";
-import { Porto } from "porto";
+import { porto } from 'porto/wagmi'
+import { Dialog, Mode } from "porto";
 
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;;
 
@@ -29,8 +30,10 @@ const daimoConfig = getDefaultConfig({
 const config = createConfig({
   ...daimoConfig,
   connectors: [
-    ...(daimoConfig.connectors || []),
-    farcasterFrame()
+    porto({ merchantUrl: process.env.NEXT_PUBLIC_PORTO_MERCHANT_URL || "https://daimo.ngrok.app/porto/merchant", 
+      mode: Mode.dialog({renderer: Dialog.popup()})}),
+    farcasterFrame(),
+    ...(daimoConfig.connectors || [])
   ]
 });
 
@@ -39,13 +42,6 @@ const queryClient = new QueryClient();
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const porto = Porto.create({
-      merchantRpcUrl: "https://daimo.ngrok.app/merchant"
-    })
-    console.log('Created porto', porto);
-  }, []);
 
   return (
     <FarcasterSolanaProvider endpoint={"https://api.mainnet-beta.solana.com"}>

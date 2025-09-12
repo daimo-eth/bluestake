@@ -1,4 +1,4 @@
-import { Route } from "porto/server";
+import { Route, Router } from "porto/server";
 import { getAddress } from "viem";
 import { assertNotNull } from "@daimo/pay-common";
 import { Hex } from "viem";
@@ -9,10 +9,13 @@ const MERCHANT_ADDRESS = getAddress(
 const MERCHANT_PRIVATE_KEY = assertNotNull(
   process.env.MERCHANT_PRIVATE_KEY
 ) as Hex;
-const route = Route.merchant({
-  address: MERCHANT_ADDRESS,
-  key: MERCHANT_PRIVATE_KEY,
-});
+const route = Router({ basePath: "/porto" }).route(
+  "/merchant",
+  Route.merchant({
+    address: MERCHANT_ADDRESS,
+    key: MERCHANT_PRIVATE_KEY,
+  })
+);
 
 export const GET = route.fetch;
 export const OPTIONS = route.fetch;
